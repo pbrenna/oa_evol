@@ -28,7 +28,7 @@ struct OArray {
 const k: usize = 4;
 const N: usize = 16;
 #[allow(non_upper_case_globals)]
-const t: usize = 3;
+const t: usize = 2;
 
 fn balanced_crossover(a: &[bool], b: &[bool], out: &mut [bool], r: &mut impl Rng) {
     let ngrande = a.len();
@@ -153,6 +153,11 @@ impl std::fmt::Display for OArray {
     }
 }
 
+fn epoch_callback(p : &Population<OArray>, i: usize, best: f64) {
+    println!("Epoch {}, best fitness {}", i, best);
+    
+}
+
 fn main() {
     let mut rng = rand::thread_rng();
     let units: Vec<OArray> = (0..1000)
@@ -163,7 +168,8 @@ fn main() {
         .set_size(1000)
         .set_breed_factor(0.3)
         .set_survival_factor(0.6)
-        .epochs_parallel(3000, 4) // 4 CPU cores
+        .register_epoch_callback(&epoch_callback)
+        .epochs_parallel(500, 4) // 4 CPU cores
         .finish();
     let asd = f
         .iter()

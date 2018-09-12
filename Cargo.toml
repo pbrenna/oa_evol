@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 
 [dependencies]
-spiril = { git = "https://github.com/Jeffail/spiril" }
+spiril = { path = "../spiril" }
 rand = "0.5.5"
 simplelog = "0.5.2"
 itertools = "0.7.8"
