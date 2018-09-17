@@ -1,7 +1,3 @@
-// This example implements the queens problem:
-// https://en.wikipedia.org/wiki/Eight_queens_puzzle
-// using an evolutionary algorithm.
-#![feature(nll)]
 extern crate ctrlc;
 extern crate pbr;
 extern crate rand;
@@ -29,7 +25,7 @@ struct OArray {
 //Parametri di esecuzione
 const K: usize = 8;
 const N: usize = 16;
-const T: usize = 2;
+const T: usize = 3;
 
 /// Unisce due OArray in in modo che il risultato sia bilanciato
 fn balanced_crossover(a: &[bool], b: &[bool], out: &mut [bool], r: &mut impl Rng) {
@@ -55,11 +51,11 @@ fn balanced_crossover(a: &[bool], b: &[bool], out: &mut [bool], r: &mut impl Rng
 }
 
 impl OArray {
-    /// Crea un array di larghezza `my_k` * `ngrande`,
+    /// Crea un array di larghezza `k` * `ngrande`,
     /// che si vorrà portare ad avere forza `t`, e lo inizializza
     /// in modo randomico ma bilanciato utilizzando `rng`.
     fn new_random_balanced(
-        my_k: usize,
+        k: usize,
         ngrande: usize,
         target_t: usize,
         rng: &mut impl rand::Rng,
@@ -71,16 +67,20 @@ impl OArray {
             target_t
         );
         let mut out = OArray {
-            d: iter::repeat(&[true, false])
-                .map(|i| *rng.choose(i).unwrap())
-                .take(ngrande * my_k)
+            //ripete true,false ngrande*k volte
+            d: [true, false]
+                .iter()
+                .cloned()
+                .cycle()
+                .take(ngrande * k)
                 .collect(),
             ngrande: ngrande,
-            k: my_k,
+            k: k,
             target_t: target_t,
         };
-        for x in 0..K {
-            rng.shuffle(&mut out.d[(x * ngrande)..(x * ngrande + ngrande)]);
+        //mescola ogni colonna
+        for x in out.iter_cols_mut() {
+            rng.shuffle(x);
         }
         out
     }
@@ -119,22 +119,39 @@ impl OArray {
     /// Scambia due coordinate nel vettore con probabiltà `prob`,
     /// usando `rng`.
     fn mutate_with_prob(&mut self, prob: f64, rng: &mut impl Rng) {
-        let rand = rng.gen_range::<f64>(0.0, 1.0);
-        if rand < prob {
-            //pick random coordinate to mutate
-            let coord1 = rng.gen_range(0, self.ngrande * self.k);
-            //pick other coordinate to swap
-            let mut coord2 = rng.gen_range(0, self.ngrande * self.k);
-            while self.d[coord2] == self.d[coord1] {
-                coord2 = rng.gen_range(0, self.ngrande * self.k);
+        let n = self.ngrande;
+        for col in self.iter_cols_mut() {
+            if rng.gen_range::<f64>(0.0, 1.0) < prob {
+                //pick random coordinate to mutate
+                let coord1 = rng.gen_range(0, n);
+                //pick other coordinate to swap
+                let mut coord2 = rng.gen_range(0, n);
+                while col[coord2] == col[coord1] {
+                    coord2 = rng.gen_range(0, n);
+                }
+                col.swap(coord1, coord2);
             }
-            self.d.swap(coord1, coord2);
         }
+    }
+
+    fn iter_cols(&self) -> impl Iterator<Item = &[bool]> {
+        self.d.chunks(self.ngrande)
+    }
+    fn iter_cols_mut(&mut self) -> impl Iterator<Item = &mut [bool]> {
+        self.d.chunks_mut(self.ngrande)
+    }
+    fn iter_rows(&self) -> impl Iterator<Item = Vec<&bool>> {
+        let b = self.ngrande;
+        (0..b).map(move |i| {
+            let c = b.clone();
+            (&self.d[i..]).iter().step_by(c).collect()
+        })
     }
 }
 // implement trait functions mutate and calculate_fitness:
 impl Unit for OArray {
     fn breed_with(&self, other: &Self) -> Self {
+        //println!("BREED++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         let mut rng = rand::thread_rng();
         //GA crossover and mutation operators are applied
         //component-wise on each bitstring
@@ -144,14 +161,13 @@ impl Unit for OArray {
             k: self.k,
             target_t: self.target_t,
         };
-        for i in 0..K {
-            let ngrande = self.ngrande;
-            let col1 = &self.d[i * ngrande..i * ngrande + ngrande];
-            let col2 = &other.d[i * ngrande..i * ngrande + ngrande];
-            let col3 = &mut out.d[i * ngrande..i * ngrande + ngrande];
+        for (col1, (col2, col3)) in self
+            .iter_cols()
+            .zip(other.iter_cols().zip(out.iter_cols_mut()))
+        {
             balanced_crossover(col1, col2, col3, &mut rng);
         }
-        out.mutate_with_prob(0.25, &mut rng);
+        out.mutate_with_prob(0.05, &mut rng);
         out
     }
 
@@ -167,31 +183,32 @@ impl Unit for OArray {
 impl std::fmt::Display for OArray {
     /// Stampa un OA
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        for i in 0..self.ngrande {
-            for j in 0..self.k {
-                write!(
-                    f,
-                    "{}",
-                    if self.d[j * self.ngrande + i] {
-                        "1 "
-                    } else {
-                        "0 "
-                    }
-                );
-            }
-            writeln!(f, "");
+        let fit = self.fitness();
+        if -fit < std::f64::EPSILON {
+            writeln!(
+                f,
+                "OA(N: {}, k: {}, s: 2, t: {}) with fitness {}",
+                self.ngrande, self.k, self.target_t, fit
+            )?;
         }
-        writeln!(f, "Fittness: {}", self.fitness())
+        for row in self.iter_rows() {
+            for x in row {
+                write!(f, "{} ", *x as u8)?
+            }
+            writeln!(f, "")?
+        }
+        Ok(())
     }
 }
 
 fn main() {
+    let n_units = 1000;
+    let epochs = 1000;
     let mut rng = rand::thread_rng();
-    let units: Vec<OArray> = (0..2000)
+    let units: Vec<OArray> = (0..n_units)
         .map(|_i| OArray::new_random_balanced(K, N, T, &mut rng))
         .collect();
 
-    let epochs = 3000;
     let mut bar = pbr::ProgressBar::new(epochs);
     let (tx, rx) = std::sync::mpsc::channel();
 
@@ -199,14 +216,14 @@ fn main() {
         tx.send(()).unwrap();
     }).expect("Can't register ctrl+c");
     let f = Population::new(units)
-        .set_size(2000)
-        .set_breed_factor(0.4)
+        .set_size(n_units)
+        .set_breed_factor(0.2)
         .set_survival_factor(0.8)
-        .register_callback(Box::new(move |i, j, count| {
-            bar.message(&format!(
-                " Best: {:.4}, Mean: {:.4}, Count: {}; iteration ",
-                i, j, count
-            ));
+        .register_callback(Box::new(move |i, j| {
+            bar.message(&format!(" Best: {:.4}, Mean: {:.4}; iteration ", i, j));
+            /*for x in units {
+                println!("{}", x.unit);
+            }*/
             (&mut bar).inc();
             if let Ok(_) = rx.try_recv() {
                 false
@@ -218,13 +235,30 @@ fn main() {
     let asd = f
         .iter()
         .max_by(|&a, &b| a.fitness().partial_cmp(&b.fitness()).unwrap());
-    println!("{}", asd.unwrap());
+    println!("Best result:\n\n{}", asd.unwrap());
 }
 
 #[test]
 fn new_random() {
     let a = OArray::new_random_balanced(K, N, T, &mut rand::thread_rng());
-    println!("{:?}", a);
+    for col in a.iter_cols() {
+        let num0 = col.iter().filter(|&&i| !i).count();
+        let num1 = col.iter().filter(|&&i| i).count();
+        assert!(num0 == num1);
+    }
+}
+
+#[test]
+fn mutation() {
+    let mut r = rand::thread_rng();
+    let mut a = OArray::new_random_balanced(K, N, T, &mut r);
+    let b = a.clone();
+    assert!(a.d == b.d);
+    a.mutate_with_prob(1.0, &mut r);
+    assert!(a.d != b.d);
+    let c = a.breed_with(&b);
+    assert!(a.d != c.d);
+    assert!(b.d != c.d);
 }
 
 #[test]

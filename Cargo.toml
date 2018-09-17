@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 
 [dependencies]
-spiril = { path = "./spiril" }
+spiril = { git = "https://github.com/pbrenna/spiril", branch="callback" }
 rand = "0.5.5"
 pbr = "1.0.1"
 ctrlc = "3.1.1"
