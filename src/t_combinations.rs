@@ -52,21 +52,21 @@ impl<'a> Iterator for CombinationsIter<'a>
                 let c = &mut self.comb.c;
                 while c[j] + 1 == c[j+1] {
                     let tmp = j;
-                    c[j] = tmp.into();
-                    j = j + 1;
+                    c[j] = tmp;
+                    j += 1;
                 }
-                c[j] = c[j] + 1;
+                c[j] += 1;
             }
             if j >= self.comb.t {
                 return None;
             } 
         }
-        Some(Vec::from(&self.comb.c[0..self.comb.t.into()]))
+        Some(Vec::from(&self.comb.c[0..self.comb.t]))
     }
 }
 
 #[allow(dead_code)]
-fn check_result(results: Vec<&[usize]>, c: impl Iterator<Item = Vec<usize>>){
+fn check_result(results: &[&[usize]], c: impl Iterator<Item = Vec<usize>>){
     let mut tot = 0;
     for (i, result) in c.enumerate() {
         assert!(result == results[i]);
@@ -79,7 +79,7 @@ fn check_result(results: Vec<&[usize]>, c: impl Iterator<Item = Vec<usize>>){
 fn test0(){
     let mut c = Combinations::new(2, 0);
     let results: Vec<&[usize]> = vec![];
-    check_result(results, c.iter());
+    check_result(&results, c.iter());
 }
 
 
@@ -90,7 +90,7 @@ fn test1(){
         &[0],
         &[1]
     ];
-    check_result(results, c.iter());
+    check_result(&results, c.iter());
 }
 
 
@@ -103,5 +103,5 @@ fn test2() {
         &[0, 2, 3],
         &[1, 2, 3]
     ];
-    check_result(results, c.iter());
+    check_result(&results, c.iter());
 }

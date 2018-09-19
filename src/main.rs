@@ -107,13 +107,12 @@ impl OArray {
         let t_num = igrande.len();
         let max_binary = 2usize.pow(t_num as u32) - 1;
         let lambda = self.ngrande / max_binary;
-        let result = (0..max_binary)
+        (0..max_binary)
             .map(|i| {
                 let d = self.delta(igrande, i, lambda);
                 (d as f64).powf(p)
             }).sum::<f64>()
-            .powf(1.0 / p);
-        result
+            .powf(1.0 / p)
     }
 
     /// Scambia due coordinate nel vettore con probabiltà `prob`,
@@ -142,10 +141,7 @@ impl OArray {
     }
     fn iter_rows(&self) -> impl Iterator<Item = Vec<&bool>> {
         let b = self.ngrande;
-        (0..b).map(move |i| {
-            let c = b.clone();
-            (&self.d[i..]).iter().step_by(c).collect()
-        })
+        (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
 }
 // implement trait functions mutate and calculate_fitness:
@@ -187,8 +183,8 @@ impl std::fmt::Display for OArray {
         if -fit < std::f64::EPSILON {
             writeln!(
                 f,
-                "OA(N: {}, k: {}, s: 2, t: {}) with fitness {}",
-                self.ngrande, self.k, self.target_t, fit
+                "OA(N: {}, k: {}, s: 2, t: {})",
+                self.ngrande, self.k, self.target_t
             )?;
         }
         for row in self.iter_rows() {
@@ -209,7 +205,7 @@ fn main() {
         .map(|_i| OArray::new_random_balanced(K, N, T, &mut rng))
         .collect();
 
-    let mut bar = pbr::ProgressBar::new(epochs);
+    let mut pbar = pbr::ProgressBar::new(epochs);
     let (tx, rx) = std::sync::mpsc::channel();
 
     ctrlc::set_handler(move || {
@@ -220,16 +216,12 @@ fn main() {
         .set_breed_factor(0.2)
         .set_survival_factor(0.8)
         .register_callback(Box::new(move |i, j| {
-            bar.message(&format!(" Best: {:.4}, Mean: {:.4}; iteration ", i, j));
+            pbar.message(&format!(" Best: {:.4}, Mean: {:.4}; iteration ", i, j));
             /*for x in units {
                 println!("{}", x.unit);
             }*/
-            (&mut bar).inc();
-            if let Ok(_) = rx.try_recv() {
-                false
-            } else {
-                true
-            }
+            (&mut pbar).inc();
+            rx.try_recv().is_err()
         })).epochs_parallel(epochs as u32, 4) // 4 CPU cores
         .finish();
     let asd = f
