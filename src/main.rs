@@ -12,7 +12,6 @@ use std::iter;
 use spiril::{population::Population, unit::Unit};
 mod t_combinations;
 
-#[allow(non_snake_case)]
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
 struct OArray {
@@ -211,6 +210,8 @@ fn main() {
     ctrlc::set_handler(move || {
         tx.send(()).unwrap();
     }).expect("Can't register ctrl+c");
+
+    let epoch = spiril::epoch::DefaultEpoch::default();
     let f = Population::new(units)
         .set_size(n_units)
         .set_breed_factor(0.2)
@@ -222,7 +223,7 @@ fn main() {
             }*/
             (&mut pbar).inc();
             rx.try_recv().is_err()
-        })).epochs_parallel(epochs as u32, 4) // 4 CPU cores
+        })).epochs_parallel(epochs as u32, 4, epoch) // 4 CPU cores
         .finish();
     let asd = f
         .iter()
