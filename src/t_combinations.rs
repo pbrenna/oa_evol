@@ -21,7 +21,7 @@ impl Combinations
 where
 {
     pub fn new(n: usize, t: usize) -> Self {
-        Combinations { n: n, t: t, c: Vec::new() }
+        Combinations { n, t, c: Vec::new() }
     }
     /// Restituisce un iteratore sulle combinazioni
     pub fn iter(&mut self) -> CombinationsIter {

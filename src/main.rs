@@ -10,7 +10,9 @@ use rand::Rng;
 use std::iter;
 
 use spiril::{population::Population, unit::Unit};
+mod epoch;
 mod t_combinations;
+use epoch::TournamentEpoch;
 
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
@@ -73,9 +75,9 @@ impl OArray {
                 .cycle()
                 .take(ngrande * k)
                 .collect(),
-            ngrande: ngrande,
-            k: k,
-            target_t: target_t,
+            ngrande,
+            k,
+            target_t,
         };
         //mescola ogni colonna
         for x in out.iter_cols_mut() {
@@ -162,7 +164,7 @@ impl Unit for OArray {
         {
             balanced_crossover(col1, col2, col3, &mut rng);
         }
-        out.mutate_with_prob(0.05, &mut rng);
+        out.mutate_with_prob(0.2, &mut rng);
         out
     }
 
@@ -190,15 +192,15 @@ impl std::fmt::Display for OArray {
             for x in row {
                 write!(f, "{} ", *x as u8)?
             }
-            writeln!(f, "")?
+            writeln!(f)?
         }
         Ok(())
     }
 }
 
 fn main() {
-    let n_units = 1000;
-    let epochs = 1000;
+    let n_units = 50;
+    let epochs = 10000;
     let mut rng = rand::thread_rng();
     let units: Vec<OArray> = (0..n_units)
         .map(|_i| OArray::new_random_balanced(K, N, T, &mut rng))
@@ -211,7 +213,8 @@ fn main() {
         tx.send(()).unwrap();
     }).expect("Can't register ctrl+c");
 
-    let epoch = spiril::epoch::DefaultEpoch::default();
+    let epoch = TournamentEpoch::new(500_000);
+    //let epoch = spiril::epoch::DefaultEpoch::new(0.2,0.8);
     let f = Population::new(units)
         .set_size(n_units)
         .set_breed_factor(0.2)
@@ -228,7 +231,12 @@ fn main() {
     let asd = f
         .iter()
         .max_by(|&a, &b| a.fitness().partial_cmp(&b.fitness()).unwrap());
-    println!("Best result:\n\n{}", asd.unwrap());
+    if -asd.unwrap().fitness() < std::f64::EPSILON {
+        println!("\n\n{}\n\n", asd.unwrap());
+        std::process::exit(2);
+    } else {
+        std::process::exit(1);
+    }
 }
 
 #[test]
