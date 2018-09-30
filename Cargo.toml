@@ -1,14 +1,17 @@
 [package]
+authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 name = "ep"
 version = "0.1.0"
-authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
-
 [dependencies]
-#spiril = { git = "https://github.com/pbrenna/spiril", branch="generic-epoch" }
-spiril = {path ="../spiril"}
-rand = "0.5.5"
-pbr = "1.0.1"
 ctrlc = "3.1.1"
+num = "*"
+num-iter = "*"
+num-traits = "*"
+pbr = "1.0.1"
+rand = "0.5.5"
+
+[dependencies.spiril]
+path = "../spiril"
 
 [profile.release]
 debug = true
