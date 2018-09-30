@@ -250,6 +250,7 @@ fn main() {
     let epochs = 10000;
     let mut rng = rand::thread_rng();
 
+    println!("Looking for OA({},{},{},{})", N, K, S, T);
     let units: Vec<OArray<_>> = (0..n_units)
         .map(|_i| OArray::new_random_balanced(N, K, S, T, &mut rng))
         .collect();
