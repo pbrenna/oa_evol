@@ -41,18 +41,18 @@ impl<
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
 struct OArray<T: Alphabet> {
-    d: Vec<T>,
     ngrande: usize,
     k: usize,
     s: T,
     target_t: usize,
+    d: Vec<T>,
 }
 
 //Parametri di esecuzione
-const K: usize = 8;
-const N: usize = 16;
-const T: usize = 3;
-const S: u8 = 2;
+const N: usize = 9;
+const K: usize = 5;
+const S: u8 = 3;
+const T: usize = 2;
 
 /// Unisce due OArray in in modo che il risultato sia bilanciato
 fn balanced_crossover<T: Alphabet>(a: &[T], b: &[T], out: &mut [T], s: T, r: &mut impl Rng) {
@@ -99,10 +99,10 @@ impl<T: Alphabet> OArray<T> {
     /// che si vorrà portare ad avere forza `t`, e lo inizializza
     /// in modo randomico ma bilanciato utilizzando `rng`.
     fn new_random_balanced(
-        k: usize,
         ngrande: usize,
-        target_t: usize,
+        k: usize,
         s: T,
+        target_t: usize,
         rng: &mut impl rand::Rng,
     ) -> Self {
         let s_usize = s.to_usize().unwrap();
@@ -247,11 +247,11 @@ impl<T: Alphabet> std::fmt::Display for OArray<T> {
 
 fn main() {
     let n_units = 50;
-    let epochs = 10000;
+    let epochs = 1000;
     let mut rng = rand::thread_rng();
 
     let units: Vec<OArray<_>> = (0..n_units)
-        .map(|_i| OArray::new_random_balanced(K, N, T, S, &mut rng))
+        .map(|_i| OArray::new_random_balanced(N, K, S, T, &mut rng))
         .collect();
 
     let mut pbar = pbr::ProgressBar::new(epochs);
@@ -289,7 +289,7 @@ fn main() {
 
 #[test]
 fn new_random() {
-    let a = OArray::new_random_balanced(K, N, T, 2u8, &mut rand::thread_rng());
+    let a = OArray::new_random_balanced(N, K, 2u8, T, &mut rand::thread_rng());
     for col in a.iter_cols() {
         let num0 = col.iter().filter(|&&i| i == 1).count();
         let num1 = col.iter().filter(|&&i| i == 0).count();
@@ -300,7 +300,7 @@ fn new_random() {
 #[test]
 fn mutation() {
     let mut r = rand::thread_rng();
-    let mut a = OArray::new_random_balanced(K, N, T, 2u8, &mut r);
+    let mut a = OArray::new_random_balanced(N, K, 2u8, T, &mut r);
     let b = a.clone();
     assert!(a.d == b.d);
     a.mutate_with_prob(1.0, &mut r);
