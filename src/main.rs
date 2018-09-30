@@ -49,10 +49,10 @@ struct OArray<T: Alphabet> {
 }
 
 //Parametri di esecuzione
-const N: usize = 9;
-const K: usize = 4;
-const S: u8 = 3;
-const T: usize = 2;
+const N: usize = 16;
+const K: usize = 8;
+const S: u8 = 2;
+const T: usize = 3;
 
 /// Unisce due OArray in in modo che il risultato sia bilanciato
 fn balanced_crossover<T: Alphabet>(a: &[T], b: &[T], out: &mut [T], s: T, r: &mut impl Rng) {
@@ -149,7 +149,7 @@ impl<T: Alphabet> OArray<T> {
     /// la funzione delta, usa i risultati per dare una distanza.
     fn delta_grande(&self, igrande: &[usize], p: f64) -> f64 {
         let t_num = igrande.len();
-        let max_representable = self.s.to_usize().unwrap().pow(t_num as u32) - 1;
+        let max_representable = self.s.to_usize().unwrap().pow(t_num as u32);
         let lambda = self.ngrande / max_representable;
         (0..max_representable)
             .map(|i| {
