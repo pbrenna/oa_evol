@@ -50,7 +50,7 @@ struct OArray<T: Alphabet> {
 
 //Parametri di esecuzione
 const N: usize = 9;
-const K: usize = 5;
+const K: usize = 4;
 const S: u8 = 3;
 const T: usize = 2;
 
@@ -149,9 +149,9 @@ impl<T: Alphabet> OArray<T> {
     /// la funzione delta, usa i risultati per dare una distanza.
     fn delta_grande(&self, igrande: &[usize], p: f64) -> f64 {
         let t_num = igrande.len();
-        let max_binary = 2usize.pow(t_num as u32) - 1;
-        let lambda = self.ngrande / max_binary;
-        (0..max_binary)
+        let max_representable = self.s.to_usize().unwrap().pow(t_num as u32) - 1;
+        let lambda = self.ngrande / max_representable;
+        (0..max_representable)
             .map(|i| {
                 let d = self.delta(igrande, i, lambda);
                 (d as f64).powf(p)
@@ -230,8 +230,8 @@ impl<T: Alphabet> std::fmt::Display for OArray<T> {
         if -fit < std::f64::EPSILON {
             writeln!(
                 f,
-                "OA(N: {}, k: {}, s: 2, t: {})",
-                self.ngrande, self.k, self.target_t
+                "OA(N: {}, k: {}, s: {}, t: {})",
+                self.ngrande, self.k, self.s.to_usize().unwrap(), self.target_t
             )?;
         }
         for row in self.iter_rows() {
@@ -247,7 +247,7 @@ impl<T: Alphabet> std::fmt::Display for OArray<T> {
 
 fn main() {
     let n_units = 50;
-    let epochs = 1000;
+    let epochs = 10000;
     let mut rng = rand::thread_rng();
 
     let units: Vec<OArray<_>> = (0..n_units)
@@ -262,7 +262,7 @@ fn main() {
     }).expect("Can't register ctrl+c");
 
     let epoch = TournamentEpoch::new(500_000);
-    let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
+    //let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
     let f = Population::new(units)
         .set_size(n_units)
         .set_breed_factor(0.2)
@@ -320,6 +320,14 @@ fn check_fitness1() {
         target_t: 2,
     };
     assert!(test.fitness() == 0.0);
+    let test = OArray {
+        d: vec![0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2],
+        ngrande: 9,
+        k: 2,
+        s: 3u8,
+        target_t: 2,
+    };
+    assert!(test.fitness() == 0.0);
 }
 
 #[test]
@@ -332,4 +340,25 @@ fn check_fitness2() {
         target_t: 1,
     };
     assert!(test.fitness() != 0.0);
+}
+
+#[test]
+fn check_delta() {
+    let test = OArray {
+        ngrande: 3,
+        k: 3,
+        s: 3u8,
+        target_t: 1,
+        d: vec![2, 1, 0, 1, 1, 1, 0, 1, 3],
+    };
+    assert!(test.delta(&[0, 1], 0, 1) == 1);
+    assert!(test.delta(&[0, 1], 1, 1) == 0);
+    assert!(test.delta(&[0, 1], 2, 1) == 1);
+    assert!(test.delta(&[0, 1], 3, 1) == 1);
+    assert!(test.delta(&[0, 1], 4, 1) == 0);
+    assert!(test.delta(&[0, 1], 5, 1) == 1);
+    assert!(test.delta(&[0, 1], 6, 1) == 1);
+    assert!(test.delta(&[0, 1], 7, 1) == 0);
+    assert!(test.delta(&[0, 1], 8, 1) == 1);
+    assert!(test.delta(&[0, 1, 2], 13, 1) == 0);
 }
