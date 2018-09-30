@@ -1,64 +1,34 @@
 use num_iter::range;
-use rand::Rng;
-use std::iter;
+use t_combinations::Combinations;
 
-use spiril::unit::Unit;
 
 use alphabet::Alphabet;
-use t_combinations::Combinations;
 
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
 pub struct OArray<T: Alphabet> {
-    ngrande: usize,
-    k: usize,
-    s: T,
-    target_t: usize,
-    d: Vec<T>,
+    pub ngrande: usize,
+    pub k: usize,
+    pub s: T,
+    pub target_t: usize,
+    pub d: Vec<T>,
 }
 
 
-/// Unisce due OArray in in modo che il risultato sia bilanciato
-fn balanced_crossover<T: Alphabet>(a: &[T], b: &[T], out: &mut [T], s: T, r: &mut impl Rng) {
-    let ngrande = a.len();
-    let s_size = s.to_usize().unwrap();
-    let balance = ngrande / s_size;
-    assert!(balance * s_size == ngrande);
-    let mut cnt = vec![balance; s_size];
-    let mut pos: Vec<_> = (0..ngrande).collect();
-    r.shuffle(&mut pos);
-    for j in pos {
-        let a_usize = a[j].to_usize().unwrap();
-        let b_usize = b[j].to_usize().unwrap();
-        let choice;
-        //If choosing neither a or b affects balancedness..
-        if cnt[a_usize] > 0 && cnt[b_usize] > 0 {
-            //choose randomly
-            choice = *r.choose(&[a[j], b[j]]).unwrap();
-        } else if cnt[a_usize] == 0 && cnt[b_usize] > 0 {
-            //only b can be choosen
-            choice = b[j];
-        } else if cnt[a_usize] > 0 && cnt[b_usize] == 0 {
-            //only a can be choosen
-            choice = a[j];
-        } else {
-            //choose randomly amongst all symbols that don't affect balancedness
-            let possible_choices: Vec<T> = range(T::zero(), s)
-                .enumerate()
-                .filter(|&(i, _)| cnt[i] > 0)
-                .map(|(_, j)| j)
-                .collect();
-            choice = *r.choose(&possible_choices).unwrap();
-        }
-        assert!(choice < s);
 
-        out[j] = choice;
-        let choice_u = choice.to_usize().unwrap();
-        cnt[choice_u] -= 1;
-    }
-}
 
 impl<T: Alphabet> OArray<T> {
+    pub fn new(ngrande: usize, k: usize, s: T, target_t: usize, d: Vec<T>) -> Self{
+        OArray {
+            //ripete l'alfabeto ngrande*k volte
+            d,
+            ngrande,
+            k,
+            s,
+            target_t,
+        }
+    }
+
     /// Crea un array di larghezza `k` * `ngrande`,
     /// che si vorrà portare ad avere forza `t`, e lo inizializza
     /// in modo randomico ma bilanciato utilizzando `rng`.
@@ -127,24 +97,6 @@ impl<T: Alphabet> OArray<T> {
             .powf(1.0 / p)
     }
 
-    /// Scambia due coordinate nel vettore con probabiltà `prob`,
-    /// usando `rng`.
-    fn mutate_with_prob(&mut self, prob: f64, rng: &mut impl Rng) {
-        let n = self.ngrande;
-        for col in self.iter_cols_mut() {
-            if rng.gen_range::<f64>(0.0, 1.0) < prob {
-                //pick random coordinate to mutate
-                let coord1 = rng.gen_range(0, n);
-                //pick other coordinate to swap
-                let mut coord2 = rng.gen_range(0, n);
-                while col[coord2] == col[coord1] {
-                    coord2 = rng.gen_range(0, n);
-                }
-                col.swap(coord1, coord2);
-            }
-        }
-    }
-
     pub fn iter_cols(&self) -> impl Iterator<Item = &[T]> {
         self.d.chunks(self.ngrande)
     }
@@ -155,35 +107,7 @@ impl<T: Alphabet> OArray<T> {
         let b = self.ngrande;
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
-}
-// implement trait functions mutate and calculate_fitness:
-impl<T: Alphabet> Unit for OArray<T> {
-    fn breed_with(&self, other: &Self) -> Self {
-        //println!("BREED++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        let mut rng = rand::thread_rng();
-        //GA crossover and mutation operators are applied
-        //component-wise on each bitstring
-        let mut out: OArray<T> = OArray {
-            d: iter::repeat(T::zero())
-                .take(self.ngrande * self.k)
-                .collect(),
-            ngrande: self.ngrande,
-            k: self.k,
-            s: self.s,
-            target_t: self.target_t,
-        };
-        for (col1, (col2, col3)) in self
-            .iter_cols()
-            .zip(other.iter_cols().zip(out.iter_cols_mut()))
-        {
-            balanced_crossover(col1, col2, col3, self.s, &mut rng);
-        }
-        out.mutate_with_prob(0.2, &mut rng);
-        out
-    }
-
-    /// Fitness: calcola delta_grande per ogni combinazione di colonne e somma
-    fn fitness(&self) -> f64 {
+    pub fn fitness(&self) -> f64 {
         let asd: f64 = Combinations::new(self.k, self.target_t)
             .iter()
             .map(|igrande| self.delta_grande(&igrande, 2.0))
@@ -213,18 +137,7 @@ impl<T: Alphabet> std::fmt::Display for OArray<T> {
     }
 }
 
-#[test]
-fn mutation() {
-    let mut r = rand::thread_rng();
-    let mut a = OArray::new_random_balanced(8, 4, 2u8, 3, &mut r);
-    let b = a.clone();
-    assert!(a.d == b.d);
-    a.mutate_with_prob(1.0, &mut r);
-    assert!(a.d != b.d);
-    let c = a.breed_with(&b);
-    assert!(a.d != c.d);
-    assert!(b.d != c.d);
-}
+
 
 
 #[test]

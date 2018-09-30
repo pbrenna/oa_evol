@@ -1,20 +1,18 @@
 extern crate ctrlc;
-extern crate num;
 extern crate num_iter;
-extern crate num_traits;
 extern crate pbr;
 extern crate rand;
 extern crate spiril;
+extern crate oarray;
 
 use spiril::{population::Population, unit::Unit};
 use epoch::TournamentEpoch;
 
 mod epoch;
-mod t_combinations;
-mod oarray;
-mod alphabet;
+mod genetic_operators;
 
 use oarray::OArray;
+use genetic_operators::GAOArray;
 
 
 //Parametri di esecuzione
@@ -30,8 +28,8 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     println!("Looking for OA({},{},{},{})", N, K, S, T);
-    let units: Vec<OArray<_>> = (0..n_units)
-        .map(|_i| OArray::new_random_balanced(N, K, S, T, &mut rng))
+    let units: Vec<GAOArray<_>> = (0..n_units)
+        .map(|_i| GAOArray(OArray::new_random_balanced(N, K, S, T, &mut rng)))
         .collect();
 
     let mut pbar = pbr::ProgressBar::new(epochs);
@@ -41,7 +39,7 @@ fn main() {
         tx.send(()).unwrap();
     }).expect("Can't register ctrl+c");
 
-    let epoch = TournamentEpoch::new(500_000);
+    let epoch = TournamentEpoch::new();
     //let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
     let f = Population::new(units)
         .set_size(n_units)
@@ -60,7 +58,7 @@ fn main() {
         .iter()
         .max_by(|&a, &b| a.fitness().partial_cmp(&b.fitness()).unwrap());
     if -asd.unwrap().fitness() < std::f64::EPSILON {
-        println!("\n\n{}\n\n", asd.unwrap());
+        println!("\n\n{}\n\n", asd.unwrap().0);
         std::process::exit(2);
     } else {
         std::process::exit(1);

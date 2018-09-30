@@ -1,0 +1,9 @@
+[package]
+name = "gp"
+version = "0.1.0"
+authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
+edition = "2018"
+
+[dependencies]
+rand = "0.5.5"
+oarray = {path = "../oarray/"}

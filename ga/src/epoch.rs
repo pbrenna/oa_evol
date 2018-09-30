@@ -1,18 +1,15 @@
 use rand::Rng;
 use spiril::{epoch::Epoch, population::LazyUnit, unit::Unit};
 use std::cmp::Ordering;
-use std::fmt::Display;
 
-pub struct TournamentEpoch {
-    eval_limit: u64,
-}
+pub struct TournamentEpoch {}
 impl TournamentEpoch {
-    pub fn new(eval_limit: u64) -> Self {
-        TournamentEpoch { eval_limit }
+    pub fn new() -> Self {
+        TournamentEpoch { }
     }
 }
 
-impl<T: Unit + Clone + Display> Epoch<T> for TournamentEpoch {
+impl<T: Unit + Clone> Epoch<T> for TournamentEpoch {
     fn epoch(&self, units: &mut Vec<LazyUnit<T>>, size: usize, r: &mut impl Rng) -> bool {
         let cmp_func = |a: &&LazyUnit<T>, b: &&LazyUnit<T>| {
             a.lazy_fitness
