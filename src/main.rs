@@ -149,9 +149,9 @@ impl<T: Alphabet> OArray<T> {
     /// la funzione delta, usa i risultati per dare una distanza.
     fn delta_grande(&self, igrande: &[usize], p: f64) -> f64 {
         let t_num = igrande.len();
-        let max_representable = self.s.to_usize().unwrap().pow(t_num as u32);
-        let lambda = self.ngrande / max_representable;
-        (0..max_representable)
+        let num_representable_strings = self.s.to_usize().unwrap().pow(t_num as u32);
+        let lambda = self.ngrande / num_representable_strings;
+        (0..num_representable_strings) //last is excluded 
             .map(|i| {
                 let d = self.delta(igrande, i, lambda);
                 (d as f64).powf(p)
