@@ -1,6 +1,7 @@
 use rand::Rng;
 use spiril::{epoch::Epoch, population::LazyUnit, unit::Unit};
 use std::cmp::Ordering;
+use std::mem;
 
 pub struct TournamentEpoch {}
 impl TournamentEpoch {
@@ -50,7 +51,7 @@ impl<T: Unit + Clone> Epoch<T> for TournamentEpoch {
             let old_best = (best_individual.unwrap().unit).clone();
             new_vec[index] = LazyUnit::from(old_best);
         }
-        std::mem::swap(&mut new_vec, units);
+        mem::swap(&mut new_vec, units);
         old_best_fitness != 0.0
     }
 }

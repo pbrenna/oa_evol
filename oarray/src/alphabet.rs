@@ -2,9 +2,10 @@
 use num::Integer;
 use num_traits::{FromPrimitive, One, ToPrimitive, Zero};
 use std::ops::Add;
+use std::fmt::Debug;
 
 pub trait Alphabet:
-    Integer + Clone + Add<Self, Output = Self> + One + Zero + FromPrimitive + ToPrimitive + Send + Copy
+    Integer + Clone + Add<Self, Output = Self> + One + Zero + FromPrimitive + ToPrimitive + Send + Copy + Debug
 {
 }
 impl<
@@ -16,6 +17,8 @@ impl<
             + FromPrimitive
             + ToPrimitive
             + Send
-            + Copy,
+            + Copy
+            + Debug,
     > Alphabet for T
-{}
+{
+}

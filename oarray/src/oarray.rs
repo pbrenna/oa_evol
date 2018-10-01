@@ -1,6 +1,8 @@
 use num_iter::range;
 use t_combinations::Combinations;
-
+use rand::Rng;
+use std::fmt::{Display, Formatter, Error};
+use std::f64::EPSILON;
 
 use alphabet::Alphabet;
 
@@ -37,7 +39,7 @@ impl<T: Alphabet> OArray<T> {
         k: usize,
         s: T,
         target_t: usize,
-        rng: &mut impl rand::Rng,
+        rng: &mut impl Rng,
     ) -> Self {
         let s_usize = s.to_usize().unwrap();
         assert!(
@@ -115,11 +117,11 @@ impl<T: Alphabet> OArray<T> {
         -asd
     }
 }
-impl<T: Alphabet> std::fmt::Display for OArray<T> {
+impl<T: Alphabet> Display for OArray<T> {
     /// Stampa un OA
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         let fit = self.fitness();
-        if -fit < std::f64::EPSILON {
+        if -fit < EPSILON {
             writeln!(
                 f,
                 "OA(N: {}, k: {}, s: {}, t: {})",

@@ -4,6 +4,7 @@ use oarray::OArray;
 use num_iter::range;
 use rand::Rng;
 use spiril::unit::Unit;
+use rand::thread_rng;
 
 /// Istanza di OArray dedicata all'algoritmo genetico: implementa 
 /// la mutazione.
@@ -75,7 +76,7 @@ impl<T: Alphabet> Unit for GAOArray<T> {
     fn breed_with(&self, other: &Self) -> Self {
         let oa = &self.0;
         //println!("BREED++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        let mut rng = rand::thread_rng();
+        let mut rng = thread_rng();
         //GA crossover and mutation operators are applied
         //component-wise on each bitstring
         let mut out_inner: OArray<T> = OArray {
