@@ -7,9 +7,7 @@ ctrlc = "*"
 num-iter = "*"
 pbr = "*"
 rand = "0.3"
-
-[dependencies.evco]
-path = "../evco/"
+evco = {git = "https://github.com/pbrenna/evco", branch="configurable" }
 
 [dependencies.oarray]
 path = "../oarray/"
