@@ -3,9 +3,13 @@ authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 name = "gp"
 version = "0.1.0"
 [dependencies]
+ctrlc = "*"
 num-iter = "*"
+pbr = "*"
 rand = "0.3"
-evco = {path = "../evco/"}
+
+[dependencies.evco]
+path = "../evco/"
 
 [dependencies.oarray]
 path = "../oarray/"

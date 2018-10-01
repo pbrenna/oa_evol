@@ -1,86 +1,97 @@
+extern crate ctrlc;
 extern crate evco;
 extern crate num_iter;
 extern crate oarray;
+extern crate pbr;
 extern crate rand;
 
+use pbr::ProgressBar;
+
+use ctrlc::set_handler;
 use evco::gp::tree::*;
 use evco::gp::*;
-use num_iter::range;
-use rand::Rng;
+use rand::{OsRng, Rng};
+use std::f64;
+use std::sync::mpsc;
 
-use oarray::alphabet::Alphabet;
-use oarray::OArray;
+mod gpoarray;
+mod treeformula;
+use gpoarray::GPOArray;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-enum TreeFormula<T: Alphabet> {
-    AddMod(BoxTree<TreeFormula<T>>, BoxTree<TreeFormula<T>>),
-    Var(usize),
-    Val(T),
+fn main() {
+    let n = 4;
+    let k = 8;
+    let s = 2u8;
+    let t = 4;
+    let max_depth = n+1;
+    //let mut rng = OsRng::new().unwrap();
+    //let tree_gen = TreeGen::full(&mut rng, 1, 4);
+
+    let mut rng = OsRng::new().unwrap();
+    let crossover = Crossover::one_point();
+
+    let mut mutate_rng = OsRng::new().unwrap();
+    let mut mut_tree_gen = TreeGen::full(&mut mutate_rng, 1, 2);
+    let mutation = Mutation::uniform();
+
+    let pop_size = 500;
+    let mut population: Vec<GPOArray<u8>> = (0..pop_size)
+        .map(|_| GPOArray::new_rand(n, k, s, t, max_depth, &mut rng))
+        .collect();
+
+    let epochs = 1000;
+    let cmp_func =
+        |a: &&GPOArray<u8>, b: &&GPOArray<u8>| a.fitness().partial_cmp(&b.fitness()).unwrap();
+
+    let mut r = OsRng::new().unwrap();
+    let mut pb = ProgressBar::new(epochs);
+
+    let (tx, rx) = mpsc::channel();
+    set_handler(move || {
+        tx.send(()).unwrap();
+    })
+    .unwrap();
+    for _ in 0..epochs {
+        let mut new_pop: Vec<GPOArray<u8>> = Vec::with_capacity(pop_size);
+        {
+            let old_best = population.iter().max_by(cmp_func).unwrap();
+            let best_fitness = old_best.fitness();
+            if -best_fitness < f64::EPSILON { break }
+            pb.message(&format!(
+                " Best:{:.4}, Mean: {:.4}\n",
+                old_best.fitness(),
+                population.iter().map(|i| i.fitness()).sum::<f64>() / (pop_size as f64)
+            ));
+            new_pop.push(old_best.clone());
+            for _ in 0..pop_size - 1 {
+                let a = r.gen_range(0, pop_size);
+                let mut b = a;
+                while b == a {
+                    b = r.gen_range(0, pop_size);
+                }
+                let mut c = b;
+                while c == b || c == a {
+                    c = r.gen_range(0, pop_size);
+                }
+                let mut tmp = [&population[a], &population[b], &population[c]];
+                tmp.sort_by(cmp_func);
+                let mut tmp2 = tmp[2].clone();
+                tmp2.mate(&mut tmp[1].clone(), crossover, &mut r);
+                tmp2.mutate(&mut mut_tree_gen, mutation);
+                tmp2.update_fitness();
+                new_pop.push(tmp2);
+            }
+            if rx.try_recv().is_ok() {
+                break;
+            }
+        }
+        std::mem::swap(&mut population, &mut new_pop);
+        pb.inc();
+    }
+    let best = population.iter().max_by(cmp_func).unwrap();
+    if -best.fitness() < f64::EPSILON {
+        println!("\n\n{}\n{}", best.to_oarray(), best);
+    } else {
+        println!("Not found :(");
+    }
 }
-
-struct TreeFormulaConfig<T: Alphabet> {
-    n_variables: usize,
-    alphabet_max: T,
-}
-
-use self::TreeFormula::*;
-impl<T: Alphabet> Tree for TreeFormula<T> {
-    type Environment = (T, Vec<T>);
-    type Action = T;
-    type Config = TreeFormulaConfig<T>;
-
-    fn branch<R: Rng>(
-        tg: &mut TreeGen<R>,
-        current_depth: usize,
-        cfg: &Self::Config,
-    ) -> BoxTree<Self> {
-        let left = Self::child(tg, current_depth + 1, cfg);
-        let right = Self::child(tg, current_depth + 1, cfg);
-        match tg.gen_range(0, 1) {
-            0 => AddMod(left, right),
-            _ => unreachable!(),
-        }
-        .into()
-    }
-
-    fn leaf<R: Rng>(tg: &mut TreeGen<R>, _: usize, cfg: &Self::Config) -> BoxTree<Self> {
-        let possible_vals = range(T::zero(), cfg.alphabet_max).collect::<Vec<T>>();
-        match tg.gen_range(0, 2) {
-            0 => Var(tg.gen_range(0, cfg.n_variables)),
-            1 => Val(*tg.choose(&possible_vals).unwrap()),
-            _ => unreachable!(),
-        }
-        .into()
-    }
-    fn count_children(&mut self) -> usize {
-        match self {
-            AddMod(_, _) => 2,
-            _ => 0,
-        }
-    }
-
-    fn children(&self) -> Vec<&BoxTree<Self>> {
-        match self {
-            AddMod(ref c1, ref c2) => vec![c1, c2],
-            _ => vec![],
-        }
-    }
-    fn children_mut(&mut self) -> Vec<&mut BoxTree<Self>> {
-        match self {
-            AddMod(ref mut c1, ref mut c2) => vec![c1, c2],
-            _ => vec![],
-        }
-    }
-
-    fn evaluate(&self, env: &Self::Environment) -> T {
-        let vars = &env.1;
-        let out = match self {
-            AddMod(ref a, ref b) => a.evaluate(env) + b.evaluate(env),
-            Val(t) => *t,
-            Var(i) => vars[*i]
-        };
-        out % env.0
-    }
-}
-
-fn main() {}

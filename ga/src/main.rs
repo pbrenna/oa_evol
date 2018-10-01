@@ -19,7 +19,7 @@ use genetic_operators::GAOArray;
 const N: usize = 16;
 const K: usize = 8;
 const S: u8 = 2;
-const T: usize = 3;
+const T: usize = 4;
 
 
 fn main() {
@@ -40,7 +40,7 @@ fn main() {
     }).expect("Can't register ctrl+c");
 
     let epoch = TournamentEpoch::new();
-    //let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
+    let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
     let f = Population::new(units)
         .set_size(n_units)
         .set_breed_factor(0.2)

@@ -131,18 +131,6 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "ep"
-version = "0.1.0"
-dependencies = [
- "ctrlc 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "num-iter 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
- "oarray 0.1.0",
- "pbr 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "spiril 0.1.0",
-]
-
-[[package]]
 name = "error-chain"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -173,6 +161,18 @@ version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "ga"
+version = "0.1.0"
+dependencies = [
+ "ctrlc 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num-iter 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
+ "oarray 0.1.0",
+ "pbr 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "spiril 0.1.0",
+]
+
+[[package]]
 name = "getopts"
 version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -184,9 +184,11 @@ dependencies = [
 name = "gp"
 version = "0.1.0"
 dependencies = [
+ "ctrlc 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "evco 0.2.1",
  "num-iter 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "oarray 0.1.0",
+ "pbr 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
