@@ -1,38 +1,31 @@
-use std::cmp::max;
-use std::cmp::min;
 use evco::gp::tree::*;
-use num_iter::range;
-use oarray::alphabet::Alphabet;
 use rand::Rng;
 use std::char;
 use std::fmt::{Display, Error, Formatter};
-use std::marker;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TreeFormula<T: Alphabet> {
-    AddMod(BoxTree<TreeFormula<T>>, BoxTree<TreeFormula<T>>),
+pub enum TreeFormula {
+    Xor(BoxTree<TreeFormula>, BoxTree<TreeFormula>),
     If(
-        BoxTree<TreeFormula<T>>,
-        BoxTree<TreeFormula<T>>,
-        BoxTree<TreeFormula<T>>,
+        BoxTree<TreeFormula>,
+        BoxTree<TreeFormula>,
+        BoxTree<TreeFormula>,
     ),
-    Min(BoxTree<TreeFormula<T>>, BoxTree<TreeFormula<T>>),
-    Max(BoxTree<TreeFormula<T>>, BoxTree<TreeFormula<T>>),
-    Neg(BoxTree<TreeFormula<T>>),
+    And(BoxTree<TreeFormula>, BoxTree<TreeFormula>),
+    Or(BoxTree<TreeFormula>, BoxTree<TreeFormula>),
+    Not(BoxTree<TreeFormula>),
     Var(usize),
-    Val(T),
 }
 
-pub struct TreeFormulaConfig<T: Alphabet> {
+pub struct TreeFormulaConfig {
     pub n_variables: usize,
-    pub alphabet_max: T,
 }
 
 use self::TreeFormula::*;
-impl<T: Alphabet> Tree for TreeFormula<T> {
-    type Environment = (T, Vec<T>);
-    type Action = T;
-    type Config = TreeFormulaConfig<T>;
+impl Tree for TreeFormula {
+    type Environment = Vec<bool>;
+    type Action = bool;
+    type Config = TreeFormulaConfig;
 
     fn branch<R: Rng>(
         tg: &mut TreeGen<R>,
@@ -41,13 +34,12 @@ impl<T: Alphabet> Tree for TreeFormula<T> {
     ) -> BoxTree<Self> {
         let left = Self::child(tg, current_depth + 1, cfg);
         let right = Self::child(tg, current_depth + 1, cfg);
-        let cond = Self::child(tg, current_depth + 1, cfg);
         match tg.gen_range(0, 5) {
-            0 => AddMod(left, right),
-            1 => Min(left, right),
-            2 => Max(left, right),
-            3 => Neg(left),
-            4 => If(cond, left, right),
+            0 => Xor(left, right),
+            1 => And(left, right),
+            2 => Or(left, right),
+            3 => Not(left),
+            4 => If(Self::child(tg, current_depth + 1, cfg), left, right),
             _ => unreachable!(),
         }
         .into()
@@ -55,67 +47,64 @@ impl<T: Alphabet> Tree for TreeFormula<T> {
 
     /// Generate tree leaves, only allowing the variables to take part.
     fn leaf<R: Rng>(tg: &mut TreeGen<R>, _: usize, cfg: &Self::Config) -> BoxTree<Self> {
-        let possible_vals = range(T::zero(), cfg.alphabet_max).collect::<Vec<T>>();
-        /*match tg.gen_range(0, 2) {
-            0 => Var(tg.gen_range(0, cfg.n_variables)),
-            1 => Val(*tg.choose(&possible_vals).unwrap()),
-            _ => unreachable!(),
-        }
-        .into()*/
         Var(tg.gen_range(0, cfg.n_variables)).into()
     }
     fn count_children(&mut self) -> usize {
         match self {
-            AddMod(_, _) => 2,
-            _ => 0,
+            Xor(_, _) | And(_, _) | Or(_, _) => 2,
+            If(_, _, _) => 3,
+            Not(_) => 1,
+            Var(_) => 0,
         }
     }
 
     fn children(&self) -> Vec<&BoxTree<Self>> {
         match self {
-            AddMod(ref c1, ref c2) => vec![c1, c2],
-            _ => vec![],
+            Xor(ref c1, ref c2) | And(ref c1, ref c2) | Or(ref c1, ref c2) => vec![c1, c2],
+            Not(ref c1) => vec![c1],
+            If(ref c1, ref c2, ref c3) => vec![c1, c2, c3],
+            Var(_) => vec![],
         }
     }
     fn children_mut(&mut self) -> Vec<&mut BoxTree<Self>> {
         match self {
-            AddMod(ref mut c1, ref mut c2) => vec![c1, c2],
-            _ => vec![],
+            Xor(ref mut c1, ref mut c2)
+            | And(ref mut c1, ref mut c2)
+            | Or(ref mut c1, ref mut c2) => vec![c1, c2],
+            If(ref mut c1, ref mut c2, ref mut c3) => vec![c1, c2, c3],
+            Not(ref mut c1) => vec![c1],
+            Var(_) => vec![],
         }
     }
 
-    fn evaluate(&self, env: &Self::Environment) -> T {
-        let vars = &env.1;
-        let out = match self {
-            AddMod(ref a, ref b) => a.evaluate(env) + b.evaluate(env),
-            Min(ref a, ref b) => min(a.evaluate(env), b.evaluate(env)),
-            Max(ref a, ref b) => max(a.evaluate(env), b.evaluate(env)),
-            Neg(ref a) => env.0 - a.evaluate(env),
-            Val(t) => *t,
-            Var(i) => vars[*i],
+    fn evaluate(&self, env: &Self::Environment) -> bool {
+        match self {
+            Xor(ref a, ref b) => a.evaluate(env) ^ b.evaluate(env),
+            And(ref a, ref b) => a.evaluate(env) && b.evaluate(env),
+            Or(ref a, ref b) => a.evaluate(env) || b.evaluate(env),
+            Not(ref a) => !a.evaluate(env),
+            Var(i) => env[*i],
             If(ref cond, ref a, ref b) => {
-                if cond.evaluate(env)!= T::zero() {
+                if cond.evaluate(env) {
                     a.evaluate(env)
                 } else {
                     b.evaluate(env)
                 }
             }
-        };
-        out % env.0
+        }
     }
 }
 
-impl<T: Alphabet> Display for TreeFormula<T> {
+impl Display for TreeFormula {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         match self {
-            AddMod(ref a, ref b) => write!(f, "{} ⨁  {}", a, b),
-            Min(ref a, ref b) => write!(f, "({} ∧ {})", a, b),
-            Max(ref a, ref b) => write!(f, "({} ∨ {})", a, b),
-            Neg(ref a) => write!(f, "¬ ({})", a),
+            Xor(ref a, ref b) => write!(f, "{} ⨁  {}", a, b),
+            And(ref a, ref b) => write!(f, "({} ∧ {})", a, b),
+            Or(ref a, ref b) => write!(f, "({} ∨ {})", a, b),
+            Not(ref a) => write!(f, "¬ ({})", a),
             If(ref cond, ref a, ref b) => write!(f, "if ({}, then {}, else {})", cond, a, b),
             //Val(t) => write!(f, "{}", t.to_usize().unwrap()),
-            Var(i) => write!(f, "x{}", subscript(*i)),
-            _ => unimplemented!(),
+            Var(i) => write!(f, "x{}", subscript(*i))
         }
     }
 }

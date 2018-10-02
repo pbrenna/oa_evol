@@ -1,42 +1,39 @@
 use evco::gp::tree::*;
 use evco::gp::*;
-use oarray::{alphabet::Alphabet, OArray};
+use oarray::OArray;
 use rand::Rng;
 use treeformula::{TreeFormula, TreeFormulaConfig};
 use std::fmt::{Display, Formatter,Error};
 
 #[derive(Clone)]
-pub struct GPOArray<T: Alphabet> {
-    pub trees: Vec<Individual<TreeFormula<T>>>,
+pub struct GPOArray {
+    pub trees: Vec<Individual<TreeFormula>>,
     ngrande: usize,
     n: usize,
     k: usize,
-    s: T,
-    target_t: usize,
+    target_t: u32,
     lazy_fitness: Option<f64>
 }
 
-struct StringIterator<T> {
-    s: T,
+struct BinaryStringIterator {
     cur: usize,
     n: usize,
 }
-impl<T: Alphabet> StringIterator<T> {
-    fn new(s: T, n: usize) -> Self {
-        StringIterator { cur: 0, s, n }
+impl BinaryStringIterator {
+    fn new(n: usize) -> Self {
+        BinaryStringIterator { cur: 0, n }
     }
 }
-impl<T: Alphabet> Iterator for StringIterator<T> {
-    type Item = Vec<T>;
+impl Iterator for BinaryStringIterator {
+    type Item = Vec<bool>;
     fn next(&mut self) -> Option<Self::Item> {
-        let s_usize = self.s.to_usize().unwrap();
-        let max = s_usize.pow(self.n as u32);
+        let max = 2usize.pow(self.n as u32);
         if self.cur < max {
             let mut out = Vec::with_capacity(self.n);
             let mut tmp = self.cur;
             for _ in 0..self.n {
-                out.push(T::from_usize(tmp % s_usize).unwrap());
-                tmp /= s_usize;
+                out.push((tmp & 1) == 1);
+                tmp >>= 1;
             }
             self.cur += 1;
             Some(out)
@@ -46,21 +43,19 @@ impl<T: Alphabet> Iterator for StringIterator<T> {
     }
 }
 
-impl<T: Alphabet> GPOArray<T> {
+impl GPOArray {
     pub fn new_rand<R: Rng>(
         n: usize,
         k: usize,
-        s: T,
-        target_t: usize,
+        target_t: u32,
         max_depth: usize,
         rng: &mut R,
     ) -> Self {
         let mut trees = Vec::with_capacity(k);
-        let mut tree_gen = TreeGen::full(rng, 1, max_depth);
-        let ngrande = s.to_usize().unwrap().pow(n as u32);
+        let mut tree_gen = TreeGen::perfect(rng, 1, max_depth);
+        let ngrande = 2usize.pow(n as u32);
         let config = TreeFormulaConfig {
             n_variables: n,
-            alphabet_max: s,
         };
         for _ in 0..k {
             trees.push(Individual::new(&mut tree_gen, &config));
@@ -70,29 +65,27 @@ impl<T: Alphabet> GPOArray<T> {
             ngrande,
             n,
             k,
-            s,
             target_t,
             lazy_fitness: None
         }
     }
-    pub fn to_oarray(&self) -> OArray<T> {
+    pub fn to_oarray(&self) -> OArray {
         let mut oa_data = Vec::with_capacity(self.ngrande * self.k);
         for col in 0..self.k {
-            for env in StringIterator::new(self.s, self.n) {
-                oa_data.push(self.trees[col].tree.evaluate(&(self.s, env)));
+            for env in BinaryStringIterator::new(self.n) {
+                oa_data.push(self.trees[col].tree.evaluate(&env));
             }
         }
-        OArray::new(self.ngrande, self.k, self.s, self.target_t, oa_data)
+        OArray::new(self.ngrande, self.k, self.target_t, oa_data)
     }
     pub fn fitness(&self) -> f64 {
         if let Some(fit) = self.lazy_fitness {
             fit
         } else {
-            let f = self.real_fitness();
-            f
+            self.real_fitness()
         }
     }
-    pub fn mate<R: Rng>(&mut self, other: &mut GPOArray<T>, crossover: Crossover, rng: &mut R) {
+    pub fn mate<R: Rng>(&mut self, other: &mut GPOArray, crossover: Crossover, rng: &mut R) {
         assert!(self.n == other.n);
         assert!(self.k == other.k);
         for (a, b) in self.trees.iter_mut().zip(other.trees.iter_mut()) {
@@ -103,7 +96,6 @@ impl<T: Alphabet> GPOArray<T> {
     pub fn mutate<R: Rng>(&mut self, tg: &mut TreeGen<R>, mutation: Mutation) {
         let config = TreeFormulaConfig {
             n_variables: self.n,
-            alphabet_max: self.s,
         };
         for tree in self.trees.iter_mut() {
             mutation.mutate(tree, tg, &config);
@@ -115,40 +107,28 @@ impl<T: Alphabet> GPOArray<T> {
     }
     pub fn real_fitness(&self) -> f64 {
         let oa = self.to_oarray();
-        let mut delta_grande = oa.fitness();
-        let s_usize = self.s.to_usize().unwrap();
+        let delta_grande = oa.fitness();
+        let mut tot = 0i64;
         for col in oa.iter_cols() {
-            let mut acc = vec![0.0; s_usize];
+            let mut acc = 0i64;
             for cell in col {
-                acc[cell.to_usize().unwrap()] += 1.0;
+                if *cell {
+                    acc += 1;
+                } else {
+                    acc -= 1;
+                }
             }
-            let aad = aad(&acc);
-            delta_grande -= aad;
+            tot += acc.abs();
         }
-        delta_grande
+        delta_grande - (tot as f64)
     }
 }
 
-impl<T: Alphabet> Display for GPOArray<T> {
+impl Display for GPOArray {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         for (i,x) in self.trees.iter().enumerate() {
             writeln!(f, "Formula {}: {}", i, x.tree)?;
         }
         writeln!(f,"")
-    }
-}
-
-/// Returns the absolute average deviation from the mean
-fn aad(v : &[f64]) -> f64 {
-    let mean: f64 = v.iter().sum::<f64>() / v.len() as f64;
-    let aad = v.iter().map(|i| (mean - i).abs()).fold(0.0, |acc,i| acc + i);
-    aad / v.len() as f64
-}
-
-#[test]
-fn strings() {
-    let it = StringIterator::new(3u8, 4);
-    for x in it {
-        println!("{:?}", x);
     }
 }

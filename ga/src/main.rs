@@ -1,5 +1,4 @@
 extern crate ctrlc;
-extern crate num_iter;
 extern crate pbr;
 extern crate rand;
 extern crate spiril;
@@ -19,7 +18,7 @@ use genetic_operators::GAOArray;
 const N: usize = 16;
 const K: usize = 8;
 const S: u8 = 2;
-const T: usize = 2;
+const T: u32 = 2;
 
 
 fn main() {
@@ -28,8 +27,8 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     println!("Looking for OA({},{},{},{})", N, K, S, T);
-    let units: Vec<GAOArray<_>> = (0..n_units)
-        .map(|_i| GAOArray(OArray::new_random_balanced(N, K, S, T, &mut rng)))
+    let units: Vec<GAOArray> = (0..n_units)
+        .map(|_i| GAOArray(OArray::new_random_balanced(N, K, T, &mut rng)))
         .collect();
 
     let mut pbar = pbr::ProgressBar::new(epochs);

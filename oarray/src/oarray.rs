@@ -1,30 +1,35 @@
-use num_iter::range;
 use rand::Rng;
 use std::f64::EPSILON;
 use std::fmt::{Display, Error, Formatter};
 use t_combinations::Combinations;
 
-use alphabet::Alphabet;
-
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
-pub struct OArray<T: Alphabet> {
+pub struct OArray {
     pub ngrande: usize,
     pub k: usize,
-    pub s: T,
-    pub target_t: usize,
-    pub d: Vec<T>,
+    pub target_t: u32,
+    lambda: usize,
+    pub d: Vec<bool>,
 }
 
-impl<T: Alphabet> OArray<T> {
-    pub fn new(ngrande: usize, k: usize, s: T, target_t: usize, d: Vec<T>) -> Self {
+impl OArray {
+    pub fn new(ngrande: usize, k: usize, target_t: u32, d: Vec<bool>) -> Self {
+        let num_t_strings = 2usize.pow(target_t);
+        let lambda = ngrande / num_t_strings;
+        assert!(
+            lambda >= 1 && num_t_strings * lambda == ngrande,
+            "I parametri N={},s=2,t={} non soddisfano i requisiti base per un array ortogonale",
+            ngrande,
+            target_t
+        );
         OArray {
             //ripete l'alfabeto ngrande*k volte
-            d,
             ngrande,
             k,
-            s,
             target_t,
+            lambda,
+            d,
         }
     }
 
@@ -34,26 +39,17 @@ impl<T: Alphabet> OArray<T> {
     pub fn new_random_balanced(
         ngrande: usize,
         k: usize,
-        s: T,
-        target_t: usize,
+        target_t: u32,
         rng: &mut impl Rng,
     ) -> Self {
-        let s_usize = s.to_usize().unwrap();
-        assert!(
-            ngrande / (s_usize.pow(target_t as u32)) >= 1,
-            "I parametri N={},s={},t={} non soddisfano i requisiti base per un array ortogonale",
-            ngrande,
-            s_usize,
-            target_t
-        );
-        let mut out: OArray<T> = OArray {
-            //ripete l'alfabeto ngrande*k volte
-            d: range(T::zero(), s).cycle().take(ngrande * k).collect(),
-            ngrande,
-            k,
-            s,
-            target_t,
-        };
+        //ripete l'alfabeto ngrande*k volte
+        let data = [true, false]
+            .iter()
+            .cloned()
+            .cycle()
+            .take(ngrande * k)
+            .collect();
+        let mut out = OArray::new(ngrande, k, target_t, data);
         //mescola ogni colonna
         for x in out.iter_cols_mut() {
             rng.shuffle(x);
@@ -65,11 +61,10 @@ impl<T: Alphabet> OArray<T> {
     /// e restituisce la differenza rispetto al livello `lambda`
     fn delta(&self, igrande: &[usize], needle: usize, lambda: usize) -> usize {
         let mut out = 0;
-        let base = self.s_usize();
         for i in 0..self.ngrande {
             //iterate rows
             let cur_row = igrande.iter().fold(0, |acc, col| {
-                acc * base + self.d[col * self.ngrande + i].to_usize().unwrap()
+                acc << 1 | self.d[col * self.ngrande + i] as usize
             });
             if cur_row == needle {
                 out += 1
@@ -78,15 +73,11 @@ impl<T: Alphabet> OArray<T> {
         (lambda as isize - out as isize).abs() as usize
     }
 
-    fn s_usize(&self) -> usize {
-        self.s.to_usize().unwrap()
-    }
-
     /// calcola per ogni numero rappresentabile da `igrande.len` bit
     /// la funzione delta, usa i risultati per dare una distanza.
     fn delta_grande(&self, igrande: &[usize], p: f64) -> f64 {
         let t_num = igrande.len();
-        let num_representable_strings = self.s_usize().pow(t_num as u32);
+        let num_representable_strings = 2usize.pow(t_num as u32);
         let lambda = self.ngrande / num_representable_strings;
         (0..num_representable_strings) //last is excluded
             .map(|i| {
@@ -97,13 +88,13 @@ impl<T: Alphabet> OArray<T> {
             .powf(1.0 / p)
     }
 
-    pub fn iter_cols(&self) -> impl Iterator<Item = &[T]> {
+    pub fn iter_cols(&self) -> impl Iterator<Item = &[bool]> {
         self.d.chunks(self.ngrande)
     }
-    pub fn iter_cols_mut(&mut self) -> impl Iterator<Item = &mut [T]> {
+    pub fn iter_cols_mut(&mut self) -> impl Iterator<Item = &mut [bool]> {
         self.d.chunks_mut(self.ngrande)
     }
-    pub fn iter_rows(&self) -> impl Iterator<Item = Vec<&T>> {
+    pub fn iter_rows(&self) -> impl Iterator<Item = Vec<&bool>> {
         let b = self.ngrande;
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
@@ -115,24 +106,23 @@ impl<T: Alphabet> OArray<T> {
         -asd
     }
 }
-impl<T: Alphabet> Display for OArray<T> {
+impl Display for OArray {
     /// Stampa un OA
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         let fit = self.fitness();
         if -fit < EPSILON {
             writeln!(
                 f,
-                "OA[N: {ngrande}, k: {k}, s: {s}, t: {t}], ({ngrande}, {k}, {t}, {lambda})",
+                "OA[N: {ngrande}, k: {k}, s: 2, t: {t}], ({ngrande}, {k}, {t}, {lambda})",
                 ngrande = self.ngrande,
                 k = self.k,
-                s = self.s_usize(),
                 t = self.target_t,
-                lambda = self.ngrande / self.s_usize().pow(self.target_t as u32)
+                lambda = self.lambda
             )?;
         }
         for row in self.iter_rows() {
             for x in row {
-                let x_conv = x.to_usize().unwrap();
+                let x_conv = *x as usize;
                 write!(f, "{} ", x_conv)?
             }
             writeln!(f)?
@@ -141,65 +131,30 @@ impl<T: Alphabet> Display for OArray<T> {
     }
 }
 
-#[test]
-fn check_delta() {
-    let test = OArray {
-        ngrande: 3,
-        k: 3,
-        s: 3u8,
-        target_t: 1,
-        d: vec![2, 1, 0, 1, 1, 1, 0, 1, 3],
+#[allow(unused_macros)]
+macro_rules! bool_vec {
+    ($($x:expr),*) => {
+        vec![$($x != 0),*]
     };
-    assert!(test.delta(&[0, 1], 0, 1) == 1);
-    assert!(test.delta(&[0, 1], 1, 1) == 0);
-    assert!(test.delta(&[0, 1], 2, 1) == 1);
-    assert!(test.delta(&[0, 1], 3, 1) == 1);
-    assert!(test.delta(&[0, 1], 4, 1) == 0);
-    assert!(test.delta(&[0, 1], 5, 1) == 1);
-    assert!(test.delta(&[0, 1], 6, 1) == 1);
-    assert!(test.delta(&[0, 1], 7, 1) == 0);
-    assert!(test.delta(&[0, 1], 8, 1) == 1);
-    assert!(test.delta(&[0, 1, 2], 13, 1) == 0);
 }
-
 #[test]
 fn new_random() {
-    let a = OArray::new_random_balanced(8, 4, 2u8, 3, &mut rand::thread_rng());
+    let a = OArray::new_random_balanced(8, 4, 3, &mut rand::thread_rng());
     for col in a.iter_cols() {
-        let num0 = col.iter().filter(|&&i| i == 1).count();
-        let num1 = col.iter().filter(|&&i| i == 0).count();
+        let num0 = col.iter().filter(|&&i| i).count();
+        let num1 = col.iter().filter(|&&i| !i).count();
         assert!(num0 == num1);
     }
 }
 
 #[test]
 fn check_fitness1() {
-    let test = OArray {
-        d: vec![0, 0, 1, 1, 0, 1, 0, 1],
-        ngrande: 4,
-        k: 2,
-        s: 2u8,
-        target_t: 2,
-    };
-    assert!(test.fitness() == 0.0);
-    let test = OArray {
-        d: vec![0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2],
-        ngrande: 9,
-        k: 2,
-        s: 3u8,
-        target_t: 2,
-    };
+    let test = OArray::new(4, 2, 2, bool_vec![0, 0, 1, 1, 0, 1, 0, 1]);
     assert!(test.fitness() == 0.0);
 }
 
 #[test]
 fn check_fitness2() {
-    let test = OArray {
-        d: vec![0, 1, 1, 1, 0, 1, 0, 1],
-        ngrande: 4,
-        k: 2,
-        s: 2u8,
-        target_t: 1,
-    };
+    let test = OArray::new(4, 2, 1, bool_vec![0, 1, 1, 1, 0, 1, 0, 1]);
     assert!(test.fitness() != 0.0);
 }

@@ -5,7 +5,6 @@ version = "0.1.0"
 
 [dependencies]
 ctrlc = "3.1.1"
-num-iter = "*"
 pbr = "1.0.1"
 rand = "0.5.5"
 oarray = {path = "../oarray/"}

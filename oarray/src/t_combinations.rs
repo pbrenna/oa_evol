@@ -20,8 +20,8 @@ pub struct CombinationsIter<'a> {
 impl Combinations
 where
 {
-    pub fn new(n: usize, t: usize) -> Self {
-        Combinations { n, t, c: Vec::new() }
+    pub fn new(n: usize, t: u32) -> Self {
+        Combinations { n, t: t as usize, c: Vec::new() }
     }
     /// Restituisce un iteratore sulle combinazioni
     pub fn iter(&mut self) -> CombinationsIter {

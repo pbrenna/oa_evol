@@ -1,6 +1,5 @@
 extern crate ctrlc;
 extern crate evco;
-extern crate num_iter;
 extern crate oarray;
 extern crate pbr;
 extern crate rand;
@@ -21,8 +20,7 @@ use gpoarray::GPOArray;
 fn main() {
     let n = 4;
     let k = 8;
-    let s = 2u8;
-    let t = 3;
+    let t = 2;
     let max_depth = n;
     //let mut rng = OsRng::new().unwrap();
     //let tree_gen = TreeGen::full(&mut rng, 1, 4);
@@ -35,13 +33,13 @@ fn main() {
     let mutation = Mutation::uniform();
 
     let pop_size = 500;
-    let mut population: Vec<GPOArray<u8>> = (0..pop_size)
-        .map(|_| GPOArray::new_rand(n, k, s, t, max_depth, &mut rng))
+    let mut population: Vec<GPOArray> = (0..pop_size)
+        .map(|_| GPOArray::new_rand(n, k, t, max_depth, &mut rng))
         .collect();
 
     let epochs = 10000;
     let cmp_func =
-        |a: &&GPOArray<u8>, b: &&GPOArray<u8>| a.fitness().partial_cmp(&b.fitness()).unwrap();
+        |a: &&GPOArray, b: &&GPOArray| a.fitness().partial_cmp(&b.fitness()).unwrap();
 
     let mut r = OsRng::new().unwrap();
     let mut pb = ProgressBar::new(epochs);
@@ -52,13 +50,13 @@ fn main() {
     })
     .unwrap();
     for _ in 0..epochs {
-        let mut new_pop: Vec<GPOArray<u8>> = Vec::with_capacity(pop_size);
+        let mut new_pop: Vec<GPOArray> = Vec::with_capacity(pop_size);
         {
             let old_best = population.iter().max_by(cmp_func).unwrap();
             let best_fitness = old_best.fitness();
             if -best_fitness < f64::EPSILON { break }
             pb.message(&format!(
-                " Best:{:.4}, Mean: {:.4}\n",
+                " Best:{:.4}, Mean: {:.4}, \n",
                 old_best.fitness(),
                 population.iter().map(|i| i.fitness()).sum::<f64>() / (pop_size as f64)
             ));

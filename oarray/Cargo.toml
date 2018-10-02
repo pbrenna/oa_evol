@@ -3,7 +3,4 @@ authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 name = "oarray"
 version = "0.1.0"
 [dependencies]
-num = "*"
-num-iter = "*"
-num-traits = "*"
 rand = "0.5.5"
