@@ -1,8 +1,8 @@
 use num_iter::range;
-use t_combinations::Combinations;
 use rand::Rng;
-use std::fmt::{Display, Formatter, Error};
 use std::f64::EPSILON;
+use std::fmt::{Display, Error, Formatter};
+use t_combinations::Combinations;
 
 use alphabet::Alphabet;
 
@@ -16,11 +16,8 @@ pub struct OArray<T: Alphabet> {
     pub d: Vec<T>,
 }
 
-
-
-
 impl<T: Alphabet> OArray<T> {
-    pub fn new(ngrande: usize, k: usize, s: T, target_t: usize, d: Vec<T>) -> Self{
+    pub fn new(ngrande: usize, k: usize, s: T, target_t: usize, d: Vec<T>) -> Self {
         OArray {
             //ripete l'alfabeto ngrande*k volte
             d,
@@ -91,11 +88,12 @@ impl<T: Alphabet> OArray<T> {
         let t_num = igrande.len();
         let num_representable_strings = self.s_usize().pow(t_num as u32);
         let lambda = self.ngrande / num_representable_strings;
-        (0..num_representable_strings) //last is excluded 
+        (0..num_representable_strings) //last is excluded
             .map(|i| {
                 let d = self.delta(igrande, i, lambda);
                 (d as f64).powf(p)
-            }).sum::<f64>()
+            })
+            .sum::<f64>()
             .powf(1.0 / p)
     }
 
@@ -124,8 +122,12 @@ impl<T: Alphabet> Display for OArray<T> {
         if -fit < EPSILON {
             writeln!(
                 f,
-                "OA(N: {}, k: {}, s: {}, t: {})",
-                self.ngrande, self.k, self.s_usize(), self.target_t
+                "OA[N: {ngrande}, k: {k}, s: {s}, t: {t}], ({ngrande}, {k}, {t}, {lambda})",
+                ngrande = self.ngrande,
+                k = self.k,
+                s = self.s_usize(),
+                t = self.target_t,
+                lambda = self.ngrande / self.s_usize().pow(self.target_t as u32)
             )?;
         }
         for row in self.iter_rows() {
@@ -138,9 +140,6 @@ impl<T: Alphabet> Display for OArray<T> {
         Ok(())
     }
 }
-
-
-
 
 #[test]
 fn check_delta() {
@@ -163,7 +162,6 @@ fn check_delta() {
     assert!(test.delta(&[0, 1, 2], 13, 1) == 0);
 }
 
-
 #[test]
 fn new_random() {
     let a = OArray::new_random_balanced(8, 4, 2u8, 3, &mut rand::thread_rng());
@@ -173,8 +171,6 @@ fn new_random() {
         assert!(num0 == num1);
     }
 }
-
-
 
 #[test]
 fn check_fitness1() {

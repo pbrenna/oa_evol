@@ -19,7 +19,7 @@ use genetic_operators::GAOArray;
 const N: usize = 16;
 const K: usize = 8;
 const S: u8 = 2;
-const T: usize = 4;
+const T: usize = 2;
 
 
 fn main() {

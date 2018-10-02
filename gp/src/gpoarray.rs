@@ -88,7 +88,7 @@ impl<T: Alphabet> GPOArray<T> {
         if let Some(fit) = self.lazy_fitness {
             fit
         } else {
-            let f = self.to_oarray().fitness();
+            let f = self.real_fitness();
             f
         }
     }
@@ -111,7 +111,21 @@ impl<T: Alphabet> GPOArray<T> {
         self.lazy_fitness = None;
     }
     pub fn update_fitness(&mut self){
-        self.lazy_fitness = Some(self.to_oarray().fitness());
+        self.lazy_fitness = Some(self.real_fitness());
+    }
+    pub fn real_fitness(&self) -> f64 {
+        let oa = self.to_oarray();
+        let mut delta_grande = oa.fitness();
+        let s_usize = self.s.to_usize().unwrap();
+        for col in oa.iter_cols() {
+            let mut acc = vec![0.0; s_usize];
+            for cell in col {
+                acc[cell.to_usize().unwrap()] += 1.0;
+            }
+            let aad = aad(&acc);
+            delta_grande -= aad;
+        }
+        delta_grande
     }
 }
 
@@ -122,6 +136,13 @@ impl<T: Alphabet> Display for GPOArray<T> {
         }
         writeln!(f,"")
     }
+}
+
+/// Returns the absolute average deviation from the mean
+fn aad(v : &[f64]) -> f64 {
+    let mean: f64 = v.iter().sum::<f64>() / v.len() as f64;
+    let aad = v.iter().map(|i| (mean - i).abs()).fold(0.0, |acc,i| acc + i);
+    aad / v.len() as f64
 }
 
 #[test]

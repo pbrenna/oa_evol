@@ -22,8 +22,8 @@ fn main() {
     let n = 4;
     let k = 8;
     let s = 2u8;
-    let t = 4;
-    let max_depth = n+1;
+    let t = 3;
+    let max_depth = n;
     //let mut rng = OsRng::new().unwrap();
     //let tree_gen = TreeGen::full(&mut rng, 1, 4);
 
@@ -39,7 +39,7 @@ fn main() {
         .map(|_| GPOArray::new_rand(n, k, s, t, max_depth, &mut rng))
         .collect();
 
-    let epochs = 1000;
+    let epochs = 10000;
     let cmp_func =
         |a: &&GPOArray<u8>, b: &&GPOArray<u8>| a.fitness().partial_cmp(&b.fitness()).unwrap();
 
