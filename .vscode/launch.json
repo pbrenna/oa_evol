@@ -7,12 +7,26 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug ep",
+            "name": "Debug gp",
             "terminal": "integrated",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=ep"
+                    "--bin=gp"
+                ]
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug ga",
+            "terminal": "integrated",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ga"
                 ]
             },
             "args": [],
