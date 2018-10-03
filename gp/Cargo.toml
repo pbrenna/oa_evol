@@ -7,6 +7,7 @@ ctrlc = "*"
 pbr = "*"
 rand = "0.3"
 evco = {git = "https://github.com/pbrenna/evco", branch="configurable" }
+spiril = {git = "https://github.com/pbrenna/spiril", branch="master"}
 
 [dependencies.oarray]
 path = "../oarray/"

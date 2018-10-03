@@ -19,7 +19,7 @@ use gpoarray::GPOArray;
 
 fn main() {
     let n = 4;
-    let k = 8;
+    let k = 7;
     let t = 2;
     let max_depth = n;
     //let mut rng = OsRng::new().unwrap();

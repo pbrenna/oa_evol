@@ -37,7 +37,7 @@ fn main() {
     })
     .expect("Can't register ctrl+c");
 
-    let epoch = TournamentEpoch::new();
+    //let epoch = TournamentEpoch::new();
     let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
     let f = Population::new(units)
         .set_size(n_units)
@@ -45,9 +45,6 @@ fn main() {
         .set_survival_factor(0.8)
         .register_callback(Box::new(move |i, j| {
             pbar.message(&format!(" Best: {:.4}, Mean: {:.4}; iteration ", i, j));
-            /*for x in units {
-                println!("{}", x.unit);
-            }*/
             (&mut pbar).inc();
             if -i < f64::EPSILON {
                 return false;
