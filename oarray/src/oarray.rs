@@ -2,6 +2,7 @@ use rand::Rng;
 use std::f64::EPSILON;
 use std::fmt::{Display, Error, Formatter};
 use t_combinations::Combinations;
+use streaming_iterator::StreamingIterator;
 
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
@@ -99,9 +100,8 @@ impl OArray {
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
     pub fn fitness(&self) -> f64 {
-        let asd: f64 = Combinations::new(self.k, self.target_t)
-            .iter()
-            .map(|igrande| self.delta_grande(&igrande, 2.0))
+        let mut comb = Combinations::new(self.k, self.target_t);
+        let asd : f64 = comb.stream_iter().map(|igrande| self.delta_grande(&igrande, 2.0)).cloned()
             .sum();
         -asd
     }
