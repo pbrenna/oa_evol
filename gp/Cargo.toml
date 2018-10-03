@@ -5,8 +5,9 @@ version = "0.1.0"
 [dependencies]
 ctrlc = "*"
 pbr = "*"
-rand = "0.3"
+rand = "0.5.5"
 evco = {git = "https://github.com/pbrenna/evco", branch="configurable" }
+#evco = {path="../../evco/"}
 spiril = {git = "https://github.com/pbrenna/spiril", branch="master"}
 
 [dependencies.oarray]

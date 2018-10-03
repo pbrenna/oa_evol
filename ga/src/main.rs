@@ -4,11 +4,11 @@ extern crate pbr;
 extern crate rand;
 extern crate spiril;
 
-use epoch::TournamentEpoch;
 use spiril::{population::Population, unit::Unit};
 use std::f64;
 
-mod epoch;
+//mod epoch;
+//use epoch::TournamentEpoch;
 mod genetic_operators;
 
 use genetic_operators::GAOArray;

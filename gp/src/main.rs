@@ -25,21 +25,21 @@ fn main() {
     //let mut rng = OsRng::new().unwrap();
     //let tree_gen = TreeGen::full(&mut rng, 1, 4);
 
-    let mut rng = OsRng::new().unwrap();
+    let rng = OsRng::new().unwrap();
     let crossover = Crossover::one_point();
 
-    let mut mutate_rng = OsRng::new().unwrap();
-    let mut mut_tree_gen = TreeGen::full(&mut mutate_rng, 1, 2);
+    let mutate_rng = OsRng::new().unwrap();
+    let mut mut_tree_gen = TreeGen::full(mutate_rng, 1, 2);
     let mutation = Mutation::uniform();
 
     let pop_size = 500;
-    let mut population: Vec<GPOArray> = (0..pop_size)
-        .map(|_| GPOArray::new_rand(n, k, t, max_depth, &mut rng))
+    let mut population: Vec<GPOArray<_>> = (0..pop_size)
+        .map(|_| GPOArray::new_rand(n, k, t, max_depth, rng.clone()))
         .collect();
 
     let epochs = 10000;
     let cmp_func =
-        |a: &&GPOArray, b: &&GPOArray| a.fitness().partial_cmp(&b.fitness()).unwrap();
+        |a: &&GPOArray<_>, b: &&GPOArray<_>| a.fitness().partial_cmp(&b.fitness()).unwrap();
 
     let mut r = OsRng::new().unwrap();
     let mut pb = ProgressBar::new(epochs);
@@ -50,7 +50,7 @@ fn main() {
     })
     .unwrap();
     for _ in 0..epochs {
-        let mut new_pop: Vec<GPOArray> = Vec::with_capacity(pop_size);
+        let mut new_pop: Vec<GPOArray<_>> = Vec::with_capacity(pop_size);
         {
             let old_best = population.iter().max_by(cmp_func).unwrap();
             let old_best_fitness = old_best.fitness();

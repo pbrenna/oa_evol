@@ -6,13 +6,14 @@ use treeformula::{TreeFormula, TreeFormulaConfig};
 use std::fmt::{Display, Formatter,Error};
 
 #[derive(Clone)]
-pub struct GPOArray {
+pub struct GPOArray<R: Rng> {
     pub trees: Vec<Individual<TreeFormula>>,
     ngrande: usize,
     n: usize,
     k: usize,
     target_t: u32,
-    lazy_fitness: Option<f64>
+    lazy_fitness: Option<f64>,
+    tree_gen: TreeGen<R>
 }
 
 struct BinaryStringIterator {
@@ -43,13 +44,13 @@ impl Iterator for BinaryStringIterator {
     }
 }
 
-impl GPOArray {
-    pub fn new_rand<R: Rng>(
+impl<R: Rng> GPOArray<R> {
+    pub fn new_rand(
         n: usize,
         k: usize,
         target_t: u32,
         max_depth: usize,
-        rng: &mut R,
+        rng: R,
     ) -> Self {
         let mut trees = Vec::with_capacity(k);
         let mut tree_gen = TreeGen::perfect(rng, 1, max_depth);
@@ -66,7 +67,8 @@ impl GPOArray {
             n,
             k,
             target_t,
-            lazy_fitness: None
+            lazy_fitness: None,
+            tree_gen
         }
     }
     pub fn to_oarray(&self) -> OArray {
@@ -85,7 +87,7 @@ impl GPOArray {
             self.real_fitness()
         }
     }
-    pub fn mate<R: Rng>(&mut self, other: &mut GPOArray, crossover: Crossover, rng: &mut R) {
+    pub fn mate(&mut self, other: &mut GPOArray<R>, crossover: Crossover, rng: &mut R) {
         assert!(self.n == other.n);
         assert!(self.k == other.k);
         for (a, b) in self.trees.iter_mut().zip(other.trees.iter_mut()) {
@@ -93,7 +95,7 @@ impl GPOArray {
         }
         self.lazy_fitness = None;
     }
-    pub fn mutate<R: Rng>(&mut self, tg: &mut TreeGen<R>, mutation: Mutation) {
+    pub fn mutate(&mut self, tg: &mut TreeGen<R>, mutation: Mutation) {
         let config = TreeFormulaConfig {
             n_variables: self.n,
         };
@@ -124,7 +126,7 @@ impl GPOArray {
     }
 }
 
-impl Display for GPOArray {
+impl<R: Rng> Display for GPOArray<R> {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         for (i,x) in self.trees.iter().enumerate() {
             writeln!(f, "Formula {}: {}", i, x.tree)?;
