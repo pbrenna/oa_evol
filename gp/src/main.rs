@@ -22,7 +22,7 @@ use gpoarray::GPOArray;
 fn main() {
     let n = 5; //N = 2^n
     let k = 16;
-    let t = 3;
+    let t = 2;
     let pop_size = 500;
     println!("Looking for OA({}, {}, 2, {})", 2usize.pow(n as u32), k, t);
 

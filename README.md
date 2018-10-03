@@ -11,11 +11,12 @@ Downloading & Running
 ---
 ```
 $ git clone https://github.com/pbrenna/oa_evol
-$ cd oa_evol
 
 # To run the genetic algorithm: 
-$ cargo run --release --bin ga
+$ cd oa_evol/ga
+$ cargo run --release
 
 #To run the genetic programming algorithm
-$ cargo run --release --bin gp
+$ cd oa_evol/gp
+$ cargo run --release
 ```
