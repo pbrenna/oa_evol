@@ -38,7 +38,7 @@ dependencies = [
 [[package]]
 name = "evco"
 version = "0.2.1"
-source = "git+https://github.com/pbrenna/evco?branch=configurable#49be018a688bde104b57d4ef09a179b772077fb2"
+source = "git+https://github.com/pbrenna/evco?branch=configurable#e7fe3d72fb78dfb22b5412ebcdb97d679fda2072"
 dependencies = [
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

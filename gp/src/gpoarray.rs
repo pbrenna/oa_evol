@@ -2,8 +2,9 @@ use evco::gp::tree::*;
 use evco::gp::*;
 use oarray::OArray;
 use rand::Rng;
+use spiril::unit::Unit;
+use std::fmt::{Display, Error, Formatter};
 use treeformula::{TreeFormula, TreeFormulaConfig};
-use std::fmt::{Display, Formatter,Error};
 
 #[derive(Clone)]
 pub struct GPOArray<R: Rng> {
@@ -13,7 +14,10 @@ pub struct GPOArray<R: Rng> {
     k: usize,
     target_t: u32,
     lazy_fitness: Option<f64>,
-    tree_gen: TreeGen<R>
+    crossover: Crossover,
+    mutation: Mutation,
+    mutation_prob: f64,
+    tree_gen: TreeGen<R>,
 }
 
 struct BinaryStringIterator {
@@ -44,20 +48,21 @@ impl Iterator for BinaryStringIterator {
     }
 }
 
-impl<R: Rng> GPOArray<R> {
+impl<R: Rng + Send> GPOArray<R> {
     pub fn new_rand(
         n: usize,
         k: usize,
         target_t: u32,
         max_depth: usize,
         rng: R,
+        crossover: Crossover,
+        mutation: Mutation,
+        mutation_prob: f64
     ) -> Self {
         let mut trees = Vec::with_capacity(k);
         let mut tree_gen = TreeGen::perfect(rng, 1, max_depth);
         let ngrande = 2usize.pow(n as u32);
-        let config = TreeFormulaConfig {
-            n_variables: n,
-        };
+        let config = TreeFormulaConfig { n_variables: n };
         for _ in 0..k {
             trees.push(Individual::new(&mut tree_gen, &config));
         }
@@ -68,7 +73,10 @@ impl<R: Rng> GPOArray<R> {
             k,
             target_t,
             lazy_fitness: None,
-            tree_gen
+            crossover,
+            mutation,
+            tree_gen,
+            mutation_prob
         }
     }
     pub fn to_oarray(&self) -> OArray {
@@ -80,34 +88,19 @@ impl<R: Rng> GPOArray<R> {
         }
         OArray::new(self.ngrande, self.k, self.target_t, oa_data)
     }
-    pub fn fitness(&self) -> f64 {
-        if let Some(fit) = self.lazy_fitness {
-            fit
-        } else {
-            self.real_fitness()
-        }
-    }
-    pub fn mate(&mut self, other: &mut GPOArray<R>, crossover: Crossover, rng: &mut R) {
-        assert!(self.n == other.n);
-        assert!(self.k == other.k);
-        for (a, b) in self.trees.iter_mut().zip(other.trees.iter_mut()) {
-            crossover.mate(a, b, rng);
-        }
-        self.lazy_fitness = None;
-    }
-    pub fn mutate(&mut self, tg: &mut TreeGen<R>, mutation: Mutation) {
+    pub fn mutate(&mut self) {
         let config = TreeFormulaConfig {
             n_variables: self.n,
         };
         for tree in self.trees.iter_mut() {
-            mutation.mutate(tree, tg, &config);
+            self.mutation.mutate(tree, &mut self.tree_gen, &config);
         }
         self.lazy_fitness = None;
     }
-    pub fn update_fitness(&mut self){
-        self.lazy_fitness = Some(self.real_fitness());
-    }
-    pub fn real_fitness(&self) -> f64 {
+}
+
+impl<R: Rng + Send + Clone> Unit for GPOArray<R> {
+    fn fitness(&self) -> f64 {
         let oa = self.to_oarray();
         let delta_grande = oa.fitness();
         let mut tot = 0i64;
@@ -124,13 +117,27 @@ impl<R: Rng> GPOArray<R> {
         }
         delta_grande - (tot as f64)
     }
+    fn breed_with(&self, other: &Self) -> Self {
+        assert!(self.n == other.n);
+        assert!(self.k == other.k);
+        let mut a = self.clone();
+        let mut b = other.clone();
+        let mut other_tree_gen = self.tree_gen.clone();
+        for (tree_a, tree_b) in a.trees.iter_mut().zip(b.trees.iter_mut()) {
+            self.crossover.mate(tree_a, tree_b, &mut other_tree_gen);
+        }
+        if other_tree_gen.gen_bool(self.mutation_prob) {
+            a.mutate();
+        }
+        a
+    }
 }
 
-impl<R: Rng> Display for GPOArray<R> {
+impl<R: Rng + Send> Display for GPOArray<R> {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        for (i,x) in self.trees.iter().enumerate() {
+        for (i, x) in self.trees.iter().enumerate() {
             writeln!(f, "Formula {}: {}", i, x.tree)?;
         }
-        writeln!(f,"")
+        writeln!(f, "")
     }
 }

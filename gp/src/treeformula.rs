@@ -98,7 +98,7 @@ impl Tree for TreeFormula {
 impl Display for TreeFormula {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         match self {
-            Xor(ref a, ref b) => write!(f, "{} ⨁  {}", a, b),
+            Xor(ref a, ref b) => write!(f, "({} ⨁  {})", a, b),
             And(ref a, ref b) => write!(f, "({} ∧ {})", a, b),
             Or(ref a, ref b) => write!(f, "({} ∨ {})", a, b),
             Not(ref a) => write!(f, "¬ ({})", a),
