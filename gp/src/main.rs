@@ -53,14 +53,15 @@ fn main() {
         let mut new_pop: Vec<GPOArray> = Vec::with_capacity(pop_size);
         {
             let old_best = population.iter().max_by(cmp_func).unwrap();
-            let best_fitness = old_best.fitness();
-            if -best_fitness < f64::EPSILON { break }
+            let old_best_fitness = old_best.fitness();
+            if -old_best_fitness < f64::EPSILON { break }
             pb.message(&format!(
                 " Best:{:.4}, Mean: {:.4}, \n",
                 old_best.fitness(),
                 population.iter().map(|i| i.fitness()).sum::<f64>() / (pop_size as f64)
             ));
             new_pop.push(old_best.clone());
+            let mut new_best_fitness = f64::NEG_INFINITY;
             for _ in 0..pop_size - 1 {
                 let a = r.gen_range(0, pop_size);
                 let mut b = a;
@@ -75,8 +76,11 @@ fn main() {
                 tmp.sort_by(cmp_func);
                 let mut tmp2 = tmp[2].clone();
                 tmp2.mate(&mut tmp[1].clone(), crossover, &mut r);
-                tmp2.mutate(&mut mut_tree_gen, mutation);
+                if *r.choose(&[true,false]).unwrap() {
+                    tmp2.mutate(&mut mut_tree_gen, mutation);
+                }
                 tmp2.update_fitness();
+                new_best_fitness = new_best_fitness.max(tmp2.fitness());
                 new_pop.push(tmp2);
             }
             if rx.try_recv().is_ok() {
@@ -89,7 +93,9 @@ fn main() {
     let best = population.iter().max_by(cmp_func).unwrap();
     if -best.fitness() < f64::EPSILON {
         println!("\n\n{}\n{}", best.to_oarray(), best);
+        std::process::exit(2);
     } else {
         println!("Not found :(");
+        std::process::exit(1);
     }
 }

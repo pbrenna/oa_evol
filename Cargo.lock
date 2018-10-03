@@ -177,7 +177,7 @@ dependencies = [
 [[package]]
 name = "spiril"
 version = "0.1.0"
-source = "git+https://github.com/pbrenna/spiril#64c84510a5ef9d8ec75e9d1b094cc57c983ce809"
+source = "git+https://github.com/pbrenna/spiril#a603b2fa0dafd337e4c3f2d0feb4230590a4aff9"
 dependencies = [
  "crossbeam 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -64,7 +64,7 @@ impl OArray {
         for i in 0..self.ngrande {
             //iterate rows
             let cur_row = igrande.iter().fold(0, |acc, col| {
-                acc << 1 | self.d[col * self.ngrande + i] as usize
+                (acc << 1) | (self.d[col * self.ngrande + i] as usize)
             });
             if cur_row == needle {
                 out += 1

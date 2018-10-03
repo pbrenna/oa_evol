@@ -6,15 +6,15 @@ use std::mem;
 pub struct TournamentEpoch {}
 impl TournamentEpoch {
     pub fn new() -> Self {
-        TournamentEpoch { }
+        TournamentEpoch {}
     }
 }
 
 impl<T: Unit + Clone> Epoch<T> for TournamentEpoch {
     fn epoch(&self, units: &mut Vec<LazyUnit<T>>, size: usize, r: &mut impl Rng) -> bool {
         let cmp_func = |a: &&LazyUnit<T>, b: &&LazyUnit<T>| {
-            a.lazy_fitness
-                .partial_cmp(&b.lazy_fitness)
+            a.fitness_lazy()
+                .partial_cmp(&b.fitness_lazy())
                 .unwrap_or(Ordering::Equal)
         };
         let unit_len = units.len();
@@ -36,20 +36,26 @@ impl<T: Unit + Clone> Epoch<T> for TournamentEpoch {
             let child = tmp[2].unit.breed_with(&tmp[1].unit);
             new_vec.push(LazyUnit::from(child));
         }
-        let index = new_vec
+        let new_best_fitness = new_vec
             .iter()
-            .enumerate()
-            .min_by(|(_, a), (_, b)| cmp_func(a, b))
+            .max_by(cmp_func)
             .unwrap()
-            .0;
-
+            .fitness_lazy();
         let old_best_fitness;
         {
-            let best_individual = units.iter().max_by(cmp_func);
-            old_best_fitness = best_individual.unwrap().lazy_fitness.unwrap_or(-1.0);
+            let old_best_individual = units.iter().max_by(cmp_func);
+            old_best_fitness = old_best_individual.unwrap().fitness_lazy();
+            if old_best_fitness > new_best_fitness {
+                let new_worst_index = new_vec
+                    .iter()
+                    .enumerate()
+                    .min_by(|(_, a), (_, b)| cmp_func(a, b))
+                    .unwrap()
+                    .0;
 
-            let old_best = (best_individual.unwrap().unit).clone();
-            new_vec[index] = LazyUnit::from(old_best);
+                let old_best_unit = (old_best_individual.unwrap().unit).clone();
+                new_vec[new_worst_index] = LazyUnit::from(old_best_unit);
+            }
         }
         mem::swap(&mut new_vec, units);
         old_best_fitness != 0.0
