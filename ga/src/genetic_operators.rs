@@ -79,7 +79,7 @@ impl Unit for GAOArray {
 
     /// Fitness: calcola delta_grande per ogni combinazione di colonne e somma
     fn fitness(&self) -> f64 {
-        self.0.fitness()
+        self.0.delta_fitness()
     }
 }
 #[test]

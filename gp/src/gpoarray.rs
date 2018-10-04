@@ -102,7 +102,7 @@ impl<R: Rng + Send> GPOArray<R> {
 impl<R: Rng + Send + Clone> Unit for GPOArray<R> {
     fn fitness(&self) -> f64 {
         let oa = self.to_oarray();
-        let delta_grande = oa.fitness();
+        let delta_grande = oa.delta_fitness();
         let mut tot = 0i64;
         for col in oa.iter_cols() {
             let mut acc = 0i64;

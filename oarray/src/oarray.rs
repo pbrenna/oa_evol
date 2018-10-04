@@ -105,6 +105,24 @@ impl OArray {
         let tot: i64 = counts.iter().map(|&i| i.abs().pow(p)).sum();
         (tot as f64).powf(1.0 / f64::from(p))
     }
+    /// Walsh
+    pub fn walsh_fitness(&self) -> f64 {
+        let t = self.target_t;
+        let mut grand_tot = 0;
+        for w in 1..=t {
+            let mut combs = Combinations::new(self.k, w);
+            let mut comb_iter = combs.stream_iter();
+            while let Some(comb) = comb_iter.next() {
+                let mut vec_tot = 0i64;
+                for u in self.iter_rows() {
+                    let prod = comb.iter().map(|i| u[*i]).fold(false, |acc, cur| acc ^ cur);
+                    vec_tot += if prod { 1 } else { -1 };
+                }
+                grand_tot += vec_tot.abs();
+            }
+        }
+        -grand_tot as f64
+    }
 
     pub fn iter_cols(&self) -> impl Iterator<Item = &[bool]> {
         self.d.chunks(self.ngrande)
@@ -117,7 +135,7 @@ impl OArray {
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
     #[allow(unused)]
-    fn fitness_old(&self) -> f64 {
+    fn fitness_old_old(&self) -> f64 {
         let mut comb = Combinations::new(self.k, self.target_t);
         let asd: f64 = comb
             .stream_iter()
@@ -126,7 +144,7 @@ impl OArray {
             .sum();
         -asd
     }
-    pub fn fitness(&self) -> f64 {
+    pub fn delta_fitness(&self) -> f64 {
         let mut comb = Combinations::new(self.k, self.target_t);
         let asd: f64 = comb
             .stream_iter()
@@ -136,18 +154,21 @@ impl OArray {
         -asd
     }
 }
+
 impl Display for OArray {
     /// Stampa un OA
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        let fit = self.fitness();
-        if -fit < EPSILON {
+        let d_fit = self.delta_fitness();
+        if -d_fit < EPSILON {
             writeln!(
                 f,
-                "OA[N: {ngrande}, k: {k}, s: 2, t: {t}], ({ngrande}, {k}, {t}, {lambda})",
+                "OA[N: {ngrande}, k: {k}, s: 2, t: {t}], ({ngrande}, {k}, {t}, {lambda}); delta_fitness: {fit}, walsh: {walsh}",
                 ngrande = self.ngrande,
                 k = self.k,
                 t = self.target_t,
-                lambda = self.lambda
+                lambda = self.lambda,
+                fit=d_fit,
+                walsh=self.walsh_fitness()
             )?;
         }
         for row in self.iter_rows() {
@@ -180,7 +201,8 @@ fn new_random() {
 #[test]
 fn check_fitness1() {
     let test = OArray::new(4, 2, 2, bool_vec![0, 0, 1, 1, 0, 1, 0, 1]);
-    assert!(test.fitness() == 0.0);
+    assert!(test.delta_fitness() == 0.0);
+    assert!(test.walsh_fitness() == 0.0);
 }
 
 #[test]
@@ -189,12 +211,13 @@ fn check_fast_delta() {
     let error = EPSILON;
     for _ in 0..100 {
         let rand = OArray::new_random_balanced(8, 7, 3, &mut rng);
-        assert!((rand.fitness() - rand.fitness_old()).abs() < error);
+        assert!((rand.fitness_old_old() - rand.delta_fitness()).abs() < error);
     }
 }
 
 #[test]
 fn check_fitness2() {
     let test = OArray::new(4, 2, 1, bool_vec![0, 1, 1, 1, 0, 1, 0, 1]);
-    assert!(test.fitness() != 0.0);
+    assert!(test.delta_fitness() != 0.0);
+    assert!(test.walsh_fitness() != 0.0);
 }
