@@ -1,8 +1,8 @@
 use rand::Rng;
 use std::f64::EPSILON;
 use std::fmt::{Display, Error, Formatter};
-use t_combinations::Combinations;
 use streaming_iterator::StreamingIterator;
+use t_combinations::Combinations;
 
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
@@ -60,6 +60,7 @@ impl OArray {
 
     /// conta il numero di occorrenze di `needle` nelle colonne `igrande` dell'array,
     /// e restituisce la differenza rispetto al livello `lambda`
+    #[allow(unused)]
     fn delta(&self, igrande: &[usize], needle: usize, lambda: usize) -> usize {
         let mut out = 0;
         for i in 0..self.ngrande {
@@ -76,6 +77,7 @@ impl OArray {
 
     /// calcola per ogni numero rappresentabile da `igrande.len` bit
     /// la funzione delta, usa i risultati per dare una distanza.
+    #[allow(unused)]
     fn delta_grande(&self, igrande: &[usize], p: f64) -> f64 {
         let t_num = igrande.len();
         let num_representable_strings = 2usize.pow(t_num as u32);
@@ -89,6 +91,21 @@ impl OArray {
             .powf(1.0 / p)
     }
 
+    fn delta_grande_faster(&self, igrande: &[usize], p: u32) -> f64 {
+        let t_num = igrande.len();
+        let num_representable_strings = 2usize.pow(t_num as u32);
+        let lambda = self.ngrande / num_representable_strings;
+        let mut counts = vec![lambda as i64; num_representable_strings];
+        for i in 0..self.ngrande {
+            let cur_row = igrande.iter().fold(0, |acc, col| {
+                acc * 2 + (self.d[col * self.ngrande + i] as usize)
+            });
+            counts[cur_row] -= 1;
+        }
+        let tot: i64 = counts.iter().map(|&i| i.abs().pow(p)).sum();
+        (tot as f64).powf(1.0 / f64::from(p))
+    }
+
     pub fn iter_cols(&self) -> impl Iterator<Item = &[bool]> {
         self.d.chunks(self.ngrande)
     }
@@ -99,9 +116,22 @@ impl OArray {
         let b = self.ngrande;
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
+    #[allow(unused)]
+    fn fitness_old(&self) -> f64 {
+        let mut comb = Combinations::new(self.k, self.target_t);
+        let asd: f64 = comb
+            .stream_iter()
+            .map(|igrande| self.delta_grande(&igrande, 2.0))
+            .cloned()
+            .sum();
+        -asd
+    }
     pub fn fitness(&self) -> f64 {
         let mut comb = Combinations::new(self.k, self.target_t);
-        let asd : f64 = comb.stream_iter().map(|igrande| self.delta_grande(&igrande, 2.0)).cloned()
+        let asd: f64 = comb
+            .stream_iter()
+            .map(|igrande| self.delta_grande_faster(&igrande, 2))
+            .cloned()
             .sum();
         -asd
     }
@@ -151,6 +181,16 @@ fn new_random() {
 fn check_fitness1() {
     let test = OArray::new(4, 2, 2, bool_vec![0, 0, 1, 1, 0, 1, 0, 1]);
     assert!(test.fitness() == 0.0);
+}
+
+#[test]
+fn check_fast_delta() {
+    let mut rng = rand::thread_rng();
+    let error = EPSILON;
+    for _ in 0..100 {
+        let rand = OArray::new_random_balanced(8, 7, 3, &mut rng);
+        assert!((rand.fitness() - rand.fitness_old()).abs() < error);
+    }
 }
 
 #[test]
