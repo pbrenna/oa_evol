@@ -4,7 +4,9 @@ name = "ga"
 version = "0.1.0"
 
 [dependencies]
-ctrlc = "3.1.1"
+log="0.4.5"
+simplelog="0.5.2"
+clap = "2.32.0"
 pbr = "1.0.1"
 rand = "0.5.5"
 oarray = {path = "../oarray/"}

@@ -1,65 +1,165 @@
-extern crate ctrlc;
 extern crate oarray;
 extern crate pbr;
 extern crate rand;
+extern crate clap;
 extern crate spiril;
+#[macro_use]
+extern crate log;
+extern crate simplelog;
 
-use spiril::{population::Population, unit::Unit};
-use std::f64;
+use clap::{App, Arg};
+use simplelog::*;
+use std::fs::File;
+use std::thread;
 
-//mod epoch;
-//use epoch::TournamentEpoch;
+mod run;
 mod genetic_operators;
 
-use genetic_operators::GAOArray;
-use oarray::OArray;
 
-//Parametri di esecuzione
-const N: usize = 16;
-const K: usize = 8;
-const T: u32 = 3;
+macro_rules! get_arg {
+    ($matches: expr, $x:expr, $type: ident) => {
+        $matches
+            .value_of($x)
+            .unwrap()
+            .parse::<$type>()
+            .expect(&format!("Invalid value for {}", $x));
+    };
+}
 
 fn main() {
-    let n_units = 50;
-    let epochs = 10000;
-    let mut rng = rand::thread_rng();
+    let matches = App::new("GA run")
+        .about("Run the Genetic Algorithm")
+        .arg(
+            Arg::with_name("n")
+                .help("log₂ of N, the height of the OA. (N = 2ⁿ)")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("k")
+                .help("the width of the OA")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("t")
+                .help("the strength of the OA")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("epochs")
+                .help("Number of epochs per run")
+                .long("epochs")
+                .default_value("10000"),
+        )
+        .arg(
+            Arg::with_name("pop-size")
+                .long("pop-size")
+                .help("The size of the population")
+                .default_value("50"),
+        )
+        .arg(
+            Arg::with_name("mutation-prob")
+                .long("mutation-prob")
+                .help("The probability that the offspring is mutated")
+                .default_value("0.2"),
+        )
+        .arg(
+            Arg::with_name("breed-factor")
+                .long("breed-factor")
+                .help("Fraction of breeders (the most fit will be chosen) in the total population ")
+                .default_value("0.2"),
+        )
+        .arg(
+            Arg::with_name("survival-factor")
+                .long("survival-factor")
+                .help("Fractions of individuals who will survive to the next epoch")
+                .default_value("0.8"),
+        )
+        .arg(
+            Arg::with_name("runs")
+                .long("runs")
+                .help("Number of runs in the campaign")
+                .default_value("1"),
+        )
+        .arg(
+            Arg::with_name("log")
+                .long("log")
+                .help("The results of the campaign will be written to this file")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("threads")
+                .long("threads")
+                .help("The max number of runs to be done in parallel")
+                .default_value("1"),
+        )
+        .get_matches();
 
-    println!("Looking for OA({}, {}, 2, {})", N, K, T);
-    let units: Vec<GAOArray> = (0..n_units)
-        .map(|_i| GAOArray(OArray::new_random_balanced(N, K, T, &mut rng)))
-        .collect();
+    let n = get_arg!(matches, "n", usize);
+    let params = run::RunParameters {
+        n,
+        k: get_arg!(matches, "k", usize),
+        t: get_arg!(matches, "t", u32),
+        epochs: get_arg!(matches, "epochs", usize),
+        pop_size: get_arg!(matches, "pop-size", usize),
+        mutation_prob: get_arg!(matches, "mutation-prob", f64),
+        breed_factor: get_arg!(matches, "breed-factor", f64),
+        survival_factor: get_arg!(matches, "survival-factor", f64),
+    };
+    let runs = get_arg!(matches, "runs", usize);
+    let threads = get_arg!(matches, "threads", usize);
+    let log = matches.value_of("log");
 
-    let mut pbar = pbr::ProgressBar::new(epochs);
-    let (tx, rx) = std::sync::mpsc::channel();
-
-    ctrlc::set_handler(move || {
-        tx.send(()).unwrap();
-    })
-    .expect("Can't register ctrl+c");
-
-    //let epoch = TournamentEpoch::new();
-    let epoch = spiril::epoch::DefaultEpoch::new(0.2, 0.8);
-    let f = Population::new(units)
-        .set_size(n_units)
-        .set_breed_factor(0.2)
-        .set_survival_factor(0.8)
-        .register_callback(Box::new(move |i, j| {
-            pbar.message(&format!(" Best: {:.4}, Mean: {:.4}; iteration ", i, j));
-            (&mut pbar).inc();
-            if -i < f64::EPSILON {
-                return false;
-            }
-            rx.try_recv().is_err()
-        }))
-        .epochs_parallel(epochs as u32, 4, &epoch) // 4 CPU cores
-        .finish();
-    let asd = f
-        .iter()
-        .max_by(|&a, &b| a.fitness().partial_cmp(&b.fitness()).unwrap());
-    if -asd.unwrap().fitness() < f64::EPSILON {
-        println!("\n\n{}\n\n", asd.unwrap().0);
-        std::process::exit(2);
+    let termlogger = SimpleLogger::new(LevelFilter::Info, Config::default());
+    if log.is_some() {
+        CombinedLogger::init(vec![
+            termlogger,
+            WriteLogger::new(
+                LevelFilter::Debug,
+                Config::default(),
+                File::create(log.unwrap()).unwrap(),
+            ),
+        ])
+        .unwrap();
     } else {
-        std::process::exit(1);
+        CombinedLogger::init(vec![termlogger]).unwrap();
     }
+
+    info!(
+        "Looking for OA[N: {}, k: {}, s: 2, t: {}]",
+        2usize.pow(params.n as u32),
+        params.k,
+        params.t
+    );
+    debug!("{:#?}", params);
+
+    let show_progress = threads == 1;
+    let runs_per_thread = runs / threads;
+    let resto = runs % threads;
+    let join_handles: Vec<_> = (0..threads)
+        .map(|thr| {
+            thread::spawn(move || {
+                debug!("Starting thread {}",thr);
+                let mut my_finds = 0usize;
+                let my_runs = if thr < resto {
+                    runs_per_thread + 1
+                } else {
+                    runs_per_thread
+                };
+                for run_n in 0..my_runs {
+                    if run::run(&params, show_progress) {
+                        my_finds += 1;
+                        info!("Found OA ({}:{})", thr, run_n);
+                    } else {
+                        info!("Not found ({}:{})", thr, run_n);
+                    }
+                }
+                my_finds
+            })
+        })
+        .collect();
+    let mut found = 0;
+    for j in join_handles {
+        found += j.join().unwrap();
+    }
+    info!("Found {} suitable OA in {} runs: {}%", found, runs, found as f64 /runs as f64 * 100.0);
 }
