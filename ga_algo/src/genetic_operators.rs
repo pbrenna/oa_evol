@@ -39,9 +39,9 @@ fn balanced_crossover(a: &[bool], b: &[bool], out: &mut [bool], r: &mut impl Rng
     r.shuffle(&mut pos);
     let mut cnt = [balance, balance];
     for j in pos {
-        let choice = if cnt[0] <= 0 {
+        let choice = if cnt[0] == 0 {
             true
-        } else if cnt[1] <= 0 {
+        } else if cnt[1] == 0 {
             false
         } else {
             *r.choose(&[a[j], b[j]]).unwrap()
