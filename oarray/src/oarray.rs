@@ -1,4 +1,5 @@
-use rand::Rng;
+#[allow(unused_imports)]
+use rand::{Rng, thread_rng};
 use std::f64::EPSILON;
 use std::fmt::{Display, Error, Formatter};
 use streaming_iterator::StreamingIterator;
@@ -190,7 +191,7 @@ macro_rules! bool_vec {
 }
 #[test]
 fn new_random() {
-    let a = OArray::new_random_balanced(8, 4, 3, &mut rand::thread_rng());
+    let a = OArray::new_random_balanced(8, 4, 3, &mut thread_rng());
     for col in a.iter_cols() {
         let num0 = col.iter().filter(|&&i| i).count();
         let num1 = col.iter().filter(|&&i| !i).count();
@@ -207,7 +208,7 @@ fn check_fitness1() {
 
 #[test]
 fn check_fast_delta() {
-    let mut rng = rand::thread_rng();
+    let mut rng = thread_rng();
     let error = EPSILON;
     for _ in 0..100 {
         let rand = OArray::new_random_balanced(8, 7, 3, &mut rng);

@@ -87,7 +87,7 @@ impl Unit for GAOArray {
 }
 #[test]
 fn mutation() {
-    let mut r = rand::thread_rng();
+    let mut r = thread_rng();
     let mut a = GAOArray {
         oa: OArray::new_random_balanced(8, 4, 3, &mut r),
         mutation_prob: 0.5,
@@ -103,7 +103,7 @@ fn mutation() {
 
 #[test]
 fn balanced_crossover_test() {
-    let mut r = rand::thread_rng();
+    let mut r = thread_rng();
     for _ in 0..100 {
         let mut a = GAOArray {
             oa: OArray::new_random_balanced(8, 1, 1, &mut r),
