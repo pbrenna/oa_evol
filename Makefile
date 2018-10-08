@@ -1,10 +1,11 @@
 results_dir = results/
-runs = 2
-threads = 2
+runs = 30
+threads = 4
 
 names = ga.8.4.2 ga.8.4.3 ga.8.5.2 ga.8.7.2 ga.16.8.2 ga.16.8.3 ga.16.15.2
-names += gp.8.4.2.2 gp.8.4.2.3 gp.8.4.3.3 gp.8.4.3.3 gp.8.5.2.2 gp.8.5.2.3 gp.8.7.2.2 gp.8.7.2.3 gp.16.8.2.2 gp.16.8.2.3 gp.16.8.2.4 gp.16.8.3.2 gp.16.8.3.3 gp.16.8.3.4
-
+names += gp.8.4.2.2 gp.8.4.2.3 gp.8.4.3.3 gp.8.4.3.3 gp.8.5.2.2 gp.8.5.2.3
+names += gp.8.7.2.2 gp.8.7.2.3 gp.16.8.2.2 gp.16.8.2.3 gp.16.8.2.4 gp.16.8.3.2
+names += gp.16.8.3.3 gp.16.8.3.4 gp.16.15.2.3 gp.16.15.2.4 gp.32.16.3.3 gp.32.16.3.4
 
 targets= $(addprefix $(results_dir),$(addsuffix .log,$(names)))
 test: $(targets)
@@ -27,3 +28,8 @@ results/gp.%.log: target/release/gp
 	LOG=$$(echo "l($$FIRST)/l(2)"| bc -l | grep -o '[[:digit:]]\+' | head -1);\
 	./gp $$LOG $${TMP[@]} --log $@.tmp --runs $(runs) --threads $(threads) --max-depth $$LAST
 	@mv $@.tmp $@
+
+target/release/ga: 
+	cargo build --release
+target/release/gp:
+	cargo build --release
