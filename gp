@@ -1,2 +1,2 @@
 #!/bin/bash
-cargo run --release -p gp -- "${@}"
+cargo run -q --release -p gp -- "${@}"

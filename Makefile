@@ -10,18 +10,20 @@ targets= $(addprefix $(results_dir),$(addsuffix .log,$(names)))
 test: $(targets)
 
 results/ga.%.log: target/release/ga
-	set -e; \
+	@echo "Making $@..."
+	@set -e; \
 	FIRST=$$(echo $@ | grep -o '[[:digit:]]\+' | head -1 );\
 	TMP=$$(echo $@ | grep -o '[[:digit:]]\+' | tail -2 ); \
 	LOG=$$(echo "l($$FIRST)/l(2)"| bc -l | grep -o '[[:digit:]]\+' | head -1);\
 	./ga $$LOG $${TMP[@]} --log $@.tmp --runs $(runs) --threads $(threads)
-	mv $@.tmp $@
+	@mv $@.tmp $@
 
 results/gp.%.log: target/release/gp
-	set -e; \
+	@echo "Making $@..."
+	@set -e; \
 	FIRST=$$(echo $@ | grep -o '[[:digit:]]\+' | head -1 );\
 	TMP=$$(echo $@ | grep -o '[[:digit:]]\+' | tail -3 | head -2 ); \
 	LAST=$$(echo $@ | grep -o '[[:digit:]]\+' | tail -1 );\
 	LOG=$$(echo "l($$FIRST)/l(2)"| bc -l | grep -o '[[:digit:]]\+' | head -1);\
 	./gp $$LOG $${TMP[@]} --log $@.tmp --runs $(runs) --threads $(threads) --max-depth $$LAST
-	mv $@.tmp $@
+	@mv $@.tmp $@

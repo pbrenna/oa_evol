@@ -1,2 +1,2 @@
 #!/bin/bash
-cargo run --release -p ga -- "${@}"
+cargo run -q --release -p ga -- "${@}"
