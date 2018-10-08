@@ -92,7 +92,7 @@ impl<R: Rng + Send> GPOArray<R> {
         let config = TreeFormulaConfig {
             n_variables: self.n,
         };
-        for tree in self.trees.iter_mut() {
+        for tree in &mut self.trees {
             self.mutation.mutate(tree, &mut self.tree_gen, &config);
         }
         self.lazy_fitness = None;

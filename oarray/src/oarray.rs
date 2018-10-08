@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 use std::f64::EPSILON;
 use std::fmt::{Display, Error, Formatter};
 use streaming_iterator::StreamingIterator;
@@ -221,4 +221,16 @@ fn check_fitness2() {
     let test = OArray::new(4, 2, 1, bool_vec![0, 1, 1, 1, 0, 1, 0, 1]);
     assert!(test.delta_fitness() != 0.0);
     assert!(test.walsh_fitness() != 0.0);
+}
+
+#[test]
+fn test_walsh() {
+    let mut rng = thread_rng();
+    let error = EPSILON;
+    for _ in 0..1000 {
+        let rand = OArray::new_random_balanced(8, 7, 3, &mut rng);
+        let delta_is_zero = -rand.delta_fitness() < error;
+        let walsh_is_zero = -rand.walsh_fitness() < error;
+        assert!(delta_is_zero == walsh_is_zero);
+    }
 }
