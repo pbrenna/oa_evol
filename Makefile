@@ -11,6 +11,7 @@ targets= $(addprefix $(results_dir),$(addsuffix .log,$(names)))
 test: $(targets)
 
 results/ga.%.log: target/release/ga
+	@mkdir -p $(results_dir)
 	@echo "Making $@..."
 	@set -e; \
 	FIRST=$$(echo $@ | grep -o '[[:digit:]]\+' | head -1 );\
@@ -20,6 +21,7 @@ results/ga.%.log: target/release/ga
 	@mv $@.tmp $@
 
 results/gp.%.log: target/release/gp
+	@mkdir -p $(results_dir)
 	@echo "Making $@..."
 	@set -e; \
 	FIRST=$$(echo $@ | grep -o '[[:digit:]]\+' | head -1 );\
@@ -29,7 +31,5 @@ results/gp.%.log: target/release/gp
 	./gp $$LOG $${TMP[@]} --log $@.tmp --runs $(runs) --threads $(threads) --max-depth $$LAST
 	@mv $@.tmp $@
 
-target/release/ga: 
-	cargo build --release
-target/release/gp:
+target/release/ga target/release/gp: 
 	cargo build --release
