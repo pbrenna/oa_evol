@@ -1,0 +1,13 @@
+[package]
+name = "results_analysis"
+version = "0.1.0"
+authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
+
+[[bin]]
+name = "is_linear"
+path = "src/is_linear.rs"
+
+
+[dependencies]
+[dependencies.oarray]
+path = "../oarray/"

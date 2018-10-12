@@ -11,6 +11,7 @@ simplelog="0.5.2"
 [dependencies.evco]
 branch = "configurable"
 git = "https://github.com/pbrenna/evco"
+#path = "../../evco/"
 
 [dependencies.oarray]
 path = "../oarray/"

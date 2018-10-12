@@ -3,7 +3,8 @@
 members = [
     "oarray",
     "ga_algo",
-    "gp_algo"
+    "gp_algo",
+    "results_analysis"
 ]
 
 [profile.release]
