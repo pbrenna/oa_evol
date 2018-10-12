@@ -93,7 +93,7 @@ fn main() {
             Arg::with_name("log")
                 .long("log")
                 .help("The results of the campaign will be written to this file")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("threads")
@@ -105,13 +105,13 @@ fn main() {
             Arg::with_name("fitness")
                 .long("fitness")
                 .help("Fitness function [Delta, DeltaFast, Walsh]")
-                .default_value("DeltaFast")
+                .default_value("DeltaFast"),
         )
         .arg(
             Arg::with_name("fitness-exp")
                 .long("fitness-exp")
                 .help("Exponent for the fitness function")
-                .default_value("2")
+                .default_value("2"),
         )
         .get_matches();
 
@@ -120,7 +120,7 @@ fn main() {
         "Delta" => oarray::FitnessFunction::Delta,
         "DeltaFast" => oarray::FitnessFunction::DeltaFast,
         "Walsh" => oarray::FitnessFunction::Walsh(get_arg!(matches, "fitness-exp", u32)),
-        _ => panic!("Invalid function name")
+        _ => panic!("Invalid function name"),
     };
 
     let params = run::RunParameters {
@@ -133,7 +133,7 @@ fn main() {
         mutation_prob: get_arg!(matches, "mutation-prob", f64),
         breed_factor: get_arg!(matches, "breed-factor", f64),
         survival_factor: get_arg!(matches, "survival-factor", f64),
-        fitness_f : f
+        fitness_f: f,
     };
     let runs = get_arg!(matches, "runs", usize);
     let threads = get_arg!(matches, "threads", usize);
@@ -169,26 +169,45 @@ fn main() {
         .map(|thr| {
             thread::spawn(move || {
                 let mut my_finds = 0usize;
+                let mut my_linear_finds= 0usize;
                 let my_runs = if thr < resto {
                     runs_per_thread + 1
                 } else {
                     runs_per_thread
                 };
                 for run_n in 0..my_runs {
-                    if run(&params, show_progress) {
+                    let result = run(&params, show_progress);
+                    if result.0 {
                         my_finds += 1;
-                        info!("Found OA ({}:{})", thr, run_n);
+                        info!(
+                            "Found OA ({}:{}), {}",
+                            thr,
+                            run_n,
+                            if result.1 { "linear" } else { "not linear" }
+                        );
+                        if result.1 {
+                            my_linear_finds += 1;
+                        }
                     } else {
                         info!("Not found ({}:{})", thr, run_n);
                     }
                 }
-                my_finds
+                (my_finds, my_linear_finds)
             })
         })
         .collect();
     let mut found = 0;
+    let mut found_linear = 0;
     for j in join_handles {
-        found += j.join().unwrap();
+        let result = j.join().unwrap();
+        found += result.0;
+        found_linear += result.1;
     }
-    info!("Found {} suitable OA in {} runs: {}%", found, runs, found as f64 /runs as f64 * 100.0);
+    info!(
+        "Found {} suitable OA in {} runs: {}%. Linear: {}%",
+        found,
+        runs,
+        found as f64 / runs as f64 * 100.0,
+        found_linear as f64 / found as f64 * 100.0
+    );
 }

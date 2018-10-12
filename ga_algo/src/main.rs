@@ -14,7 +14,7 @@ use std::thread;
 
 mod run;
 mod genetic_operators;
-
+use run::run;
 
 macro_rules! get_arg {
     ($matches: expr, $x:expr, $type: ident) => {
@@ -155,31 +155,49 @@ fn main() {
     let show_progress = threads == 1;
     let runs_per_thread = runs / threads;
     let resto = runs % threads;
-    let join_handles: Vec<_> = (0..threads)
+        let join_handles: Vec<_> = (0..threads)
         .map(|thr| {
             thread::spawn(move || {
-                debug!("Starting thread {}",thr);
                 let mut my_finds = 0usize;
+                let mut my_linear_finds= 0usize;
                 let my_runs = if thr < resto {
                     runs_per_thread + 1
                 } else {
                     runs_per_thread
                 };
                 for run_n in 0..my_runs {
-                    if run::run(&params, show_progress) {
+                    let result = run(&params, show_progress);
+                    if result.0 {
                         my_finds += 1;
-                        info!("Found OA ({}:{})", thr, run_n);
+                        info!(
+                            "Found OA ({}:{}), {}",
+                            thr,
+                            run_n,
+                            if result.1 { "linear" } else { "not linear" }
+                        );
+                        if result.1 {
+                            my_linear_finds += 1;
+                        }
                     } else {
                         info!("Not found ({}:{})", thr, run_n);
                     }
                 }
-                my_finds
+                (my_finds, my_linear_finds)
             })
         })
         .collect();
     let mut found = 0;
+    let mut found_linear = 0;
     for j in join_handles {
-        found += j.join().unwrap();
+        let result = j.join().unwrap();
+        found += result.0;
+        found_linear += result.1;
     }
-    info!("Found {} suitable OA in {} runs: {}%", found, runs, found as f64 /runs as f64 * 100.0);
+    info!(
+        "Found {} suitable OA in {} runs: {}%. Linear: {}%",
+        found,
+        runs,
+        found as f64 / runs as f64 * 100.0,
+        found_linear as f64 / found as f64 * 100.0
+    );
 }

@@ -22,7 +22,7 @@ pub(crate) struct RunParameters {
     pub fitness_f: FitnessFunction
 }
 
-pub(crate) fn run(p: &RunParameters, show_progress: bool) -> bool {
+pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     let mut rng = thread_rng();
     let ngrande = 2usize.pow(p.n as u32);
     let units: Vec<GAOArray> = (0..p.pop_size)
@@ -55,8 +55,8 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> bool {
         .max_by(|&a, &b| a.fitness().partial_cmp(&b.fitness()).unwrap());
     if -asd.unwrap().fitness() < f64::EPSILON {
         debug!("{}", asd.unwrap().oa);
-        true
+        (true, asd.unwrap().oa.check_linear())
     } else {
-        false
+        (false, false)
     }
 }

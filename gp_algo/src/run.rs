@@ -24,7 +24,7 @@ pub(crate) struct RunParameters {
 }
 
 
-pub(crate) fn run(p : &RunParameters, show_progress: bool) -> bool {
+pub(crate) fn run(p : &RunParameters, show_progress: bool) -> (bool, bool) {
 
     let crossover = Crossover::hard_prune(p.max_depth);
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
@@ -79,8 +79,8 @@ pub(crate) fn run(p : &RunParameters, show_progress: bool) -> bool {
         .unwrap();
     if -asd.fitness() < f64::EPSILON {
         debug!("{}\n{}", asd.to_oarray(), asd);
-        true
+        (true, asd.to_oarray().check_linear())
     } else {
-        false
+        (false, false)
     }
 }
