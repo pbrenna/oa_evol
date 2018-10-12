@@ -101,9 +101,28 @@ fn main() {
                 .help("The max number of runs to be done in parallel")
                 .default_value("1"),
         )
+        .arg(
+            Arg::with_name("fitness")
+                .long("fitness")
+                .help("Fitness function [Delta, DeltaFast, Walsh]")
+                .default_value("DeltaFast")
+        )
+        .arg(
+            Arg::with_name("fitness-exp")
+                .long("fitness-exp")
+                .help("Exponent for the fitness function")
+                .default_value("2")
+        )
         .get_matches();
 
     let n = get_arg!(matches, "n", usize);
+    let f = match matches.value_of("fitness").unwrap() {
+        "Delta" => oarray::FitnessFunction::Delta,
+        "DeltaFast" => oarray::FitnessFunction::DeltaFast,
+        "Walsh" => oarray::FitnessFunction::Walsh(get_arg!(matches, "fitness-exp", u32)),
+        _ => panic!("Invalid function name")
+    };
+
     let params = run::RunParameters {
         n,
         k: get_arg!(matches, "k", usize),
@@ -114,6 +133,7 @@ fn main() {
         mutation_prob: get_arg!(matches, "mutation-prob", f64),
         breed_factor: get_arg!(matches, "breed-factor", f64),
         survival_factor: get_arg!(matches, "survival-factor", f64),
+        fitness_f : f
     };
     let runs = get_arg!(matches, "runs", usize);
     let threads = get_arg!(matches, "threads", usize);

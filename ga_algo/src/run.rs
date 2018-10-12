@@ -19,6 +19,7 @@ pub(crate) struct RunParameters {
     pub breed_factor: f64,
     pub survival_factor: f64,
     pub epochs: usize,
+    pub fitness_f: oarray::FitnessFunction
 }
 
 pub(crate) fn run(p: &RunParameters, show_progress: bool) -> bool {
@@ -26,7 +27,7 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> bool {
     let ngrande = 2usize.pow(p.n as u32);
     let units: Vec<GAOArray> = (0..p.pop_size)
         .map(|_i| GAOArray {
-            oa: OArray::new_random_balanced(ngrande, p.k, p.t, &mut rng),
+            oa: OArray::new_random_balanced(ngrande, p.k, p.t, &mut rng, p.fitness_f),
             mutation_prob: p.mutation_prob,
         })
         .collect();

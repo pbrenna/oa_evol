@@ -18,7 +18,8 @@ pub(crate) struct RunParameters {
     pub mutation_prob: f64,
     pub breed_factor: f64,
     pub survival_factor: f64,
-    pub epochs: usize
+    pub epochs: usize,
+    pub fitness_f: oarray::FitnessFunction
 }
 
 
@@ -44,6 +45,7 @@ pub(crate) fn run(p : &RunParameters, show_progress: bool) -> bool {
                 crossover,
                 mutation,
                 p.mutation_prob,
+                p.fitness_f
             )
         })
         .collect();

@@ -2,8 +2,8 @@
 use rand::{thread_rng, Rng};
 use std::f64::EPSILON;
 use std::fmt::{Display, Error, Formatter};
-use streaming_iterator::StreamingIterator;
-use t_combinations::Combinations;
+
+use fitness::FitnessFunction;
 
 #[derive(Clone, Debug)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
@@ -13,10 +13,17 @@ pub struct OArray {
     pub target_t: u32,
     lambda: usize,
     pub d: Vec<bool>,
+    pub fitness_f: FitnessFunction,
 }
 
 impl OArray {
-    pub fn new(ngrande: usize, k: usize, target_t: u32, d: Vec<bool>) -> Self {
+    pub fn new(
+        ngrande: usize,
+        k: usize,
+        target_t: u32,
+        d: Vec<bool>,
+        fitness_f: FitnessFunction,
+    ) -> Self {
         let num_t_strings = 2usize.pow(target_t);
         let lambda = ngrande / num_t_strings;
         assert!(
@@ -32,6 +39,7 @@ impl OArray {
             target_t,
             lambda,
             d,
+            fitness_f,
         }
     }
 
@@ -43,6 +51,7 @@ impl OArray {
         k: usize,
         target_t: u32,
         rng: &mut impl Rng,
+        fitness_f: FitnessFunction,
     ) -> Self {
         //ripete l'alfabeto ngrande*k volte
         let data = [true, false]
@@ -51,7 +60,7 @@ impl OArray {
             .cycle()
             .take(ngrande * k)
             .collect();
-        let mut out = OArray::new(ngrande, k, target_t, data);
+        let mut out = OArray::new(ngrande, k, target_t, data, fitness_f);
         //mescola ogni colonna
         for x in out.iter_cols_mut() {
             rng.shuffle(x);
@@ -59,71 +68,6 @@ impl OArray {
         out
     }
 
-    /// conta il numero di occorrenze di `needle` nelle colonne `igrande` dell'array,
-    /// e restituisce la differenza rispetto al livello `lambda`
-    #[allow(unused)]
-    fn delta(&self, igrande: &[usize], needle: usize, lambda: usize) -> usize {
-        let mut out = 0;
-        for i in 0..self.ngrande {
-            //iterate rows
-            let cur_row = igrande.iter().fold(0, |acc, col| {
-                (acc << 1) | (self.d[col * self.ngrande + i] as usize)
-            });
-            if cur_row == needle {
-                out += 1
-            }
-        }
-        (lambda as isize - out as isize).abs() as usize
-    }
-
-    /// calcola per ogni numero rappresentabile da `igrande.len` bit
-    /// la funzione delta, usa i risultati per dare una distanza.
-    #[allow(unused)]
-    fn delta_grande(&self, igrande: &[usize], p: f64) -> f64 {
-        let t_num = igrande.len();
-        let num_representable_strings = 2usize.pow(t_num as u32);
-        let lambda = self.ngrande / num_representable_strings;
-        (0..num_representable_strings) //last is excluded
-            .map(|i| {
-                let d = self.delta(igrande, i, lambda);
-                (d as f64).powf(p)
-            })
-            .sum::<f64>()
-            .powf(1.0 / p)
-    }
-
-    fn delta_grande_faster(&self, igrande: &[usize], p: u32) -> f64 {
-        let t_num = igrande.len();
-        let num_representable_strings = 2usize.pow(t_num as u32);
-        let lambda = self.ngrande / num_representable_strings;
-        let mut counts = vec![lambda as i64; num_representable_strings];
-        for i in 0..self.ngrande {
-            let cur_row = igrande.iter().fold(0, |acc, col| {
-                acc * 2 + (self.d[col * self.ngrande + i] as usize)
-            });
-            counts[cur_row] -= 1;
-        }
-        let tot: i64 = counts.iter().map(|&i| i.abs().pow(p)).sum();
-        (tot as f64).powf(1.0 / f64::from(p))
-    }
-    /// Walsh
-    pub fn walsh_fitness(&self) -> f64 {
-        let t = self.target_t;
-        let mut grand_tot = 0;
-        for w in 1..=t {
-            let mut combs = Combinations::new(self.k, w);
-            let mut comb_iter = combs.stream_iter();
-            while let Some(comb) = comb_iter.next() {
-                let mut vec_tot = 0i64;
-                for u in self.iter_rows() {
-                    let prod = comb.iter().map(|i| u[*i]).fold(false, |acc, cur| acc ^ cur);
-                    vec_tot += if prod { 1 } else { -1 };
-                }
-                grand_tot += vec_tot.abs();
-            }
-        }
-        -grand_tot as f64
-    }
 
     pub fn iter_cols(&self) -> impl Iterator<Item = &[bool]> {
         self.d.chunks(self.ngrande)
@@ -135,41 +79,40 @@ impl OArray {
         let b = self.ngrande;
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
-    #[allow(unused)]
-    fn fitness_old_old(&self) -> f64 {
-        let mut comb = Combinations::new(self.k, self.target_t);
-        let asd: f64 = comb
-            .stream_iter()
-            .map(|igrande| self.delta_grande(&igrande, 2.0))
-            .cloned()
-            .sum();
-        -asd
-    }
-    pub fn delta_fitness(&self) -> f64 {
-        let mut comb = Combinations::new(self.k, self.target_t);
-        let asd: f64 = comb
-            .stream_iter()
-            .map(|igrande| self.delta_grande_faster(&igrande, 2))
-            .cloned()
-            .sum();
-        -asd
+
+    pub fn check_linear(&self) -> bool {
+        let cols: Vec<&[bool]> = self.iter_cols().collect();
+        for a in 0..self.k {
+            for b in a + 1..self.k {
+                let xor: Vec<bool> = cols[a]
+                    .iter()
+                    .zip(cols[b].iter())
+                    .map(|(&a, &b)| a ^ b)
+                    .collect();
+                if !cols.iter().any(|&row| row == xor.as_slice()) {
+                    return false;
+                }
+            }
+        }
+        true
     }
 }
 
 impl Display for OArray {
     /// Stampa un OA
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        let d_fit = self.delta_fitness();
+        let d_fit = self.fitness();
         if -d_fit < EPSILON {
             writeln!(
                 f,
-                "OA[N: {ngrande}, k: {k}, s: 2, t: {t}], ({ngrande}, {k}, {t}, {lambda}); delta_fitness: {fit}, walsh: {walsh}",
+                "OA[N: {ngrande}, k: {k}, s: 2, t: {t}], ({ngrande}, {k}, {t}, {lambda}); fitness: {fit}, fitness_f: {fitness_f:?}, linear: {lin}",
                 ngrande = self.ngrande,
                 k = self.k,
                 t = self.target_t,
                 lambda = self.lambda,
                 fit=d_fit,
-                walsh=self.walsh_fitness()
+                fitness_f=self.fitness_f,
+                lin=self.check_linear()
             )?;
         }
         for row in self.iter_rows() {
@@ -183,15 +126,9 @@ impl Display for OArray {
     }
 }
 
-#[allow(unused_macros)]
-macro_rules! bool_vec {
-    ($($x:expr),*) => {
-        vec![$($x != 0),*]
-    };
-}
 #[test]
 fn new_random() {
-    let a = OArray::new_random_balanced(8, 4, 3, &mut thread_rng());
+    let a = OArray::new_random_balanced(8, 4, 3, &mut thread_rng(), FitnessFunction::DeltaFast);
     for col in a.iter_cols() {
         let num0 = col.iter().filter(|&&i| i).count();
         let num1 = col.iter().filter(|&&i| !i).count();
@@ -199,38 +136,3 @@ fn new_random() {
     }
 }
 
-#[test]
-fn check_fitness1() {
-    let test = OArray::new(4, 2, 2, bool_vec![0, 0, 1, 1, 0, 1, 0, 1]);
-    assert!(test.delta_fitness() == 0.0);
-    assert!(test.walsh_fitness() == 0.0);
-}
-
-#[test]
-fn check_fast_delta() {
-    let mut rng = thread_rng();
-    let error = EPSILON;
-    for _ in 0..100 {
-        let rand = OArray::new_random_balanced(8, 7, 3, &mut rng);
-        assert!((rand.fitness_old_old() - rand.delta_fitness()).abs() < error);
-    }
-}
-
-#[test]
-fn check_fitness2() {
-    let test = OArray::new(4, 2, 1, bool_vec![0, 1, 1, 1, 0, 1, 0, 1]);
-    assert!(test.delta_fitness() != 0.0);
-    assert!(test.walsh_fitness() != 0.0);
-}
-
-#[test]
-fn test_walsh() {
-    let mut rng = thread_rng();
-    let error = EPSILON;
-    for _ in 0..1000 {
-        let rand = OArray::new_random_balanced(8, 7, 3, &mut rng);
-        let delta_is_zero = -rand.delta_fitness() < error;
-        let walsh_is_zero = -rand.walsh_fitness() < error;
-        assert!(delta_is_zero == walsh_is_zero);
-    }
-}

@@ -65,6 +65,7 @@ impl Unit for GAOArray {
             oa.k,
             oa.target_t,
             iter::repeat(false).take(oa.ngrande * oa.k).collect(),
+            oa.fitness_f
         );
         for (col1, (col2, col3)) in oa
             .iter_cols()
@@ -82,14 +83,14 @@ impl Unit for GAOArray {
 
     /// Fitness: calcola delta_grande per ogni combinazione di colonne e somma
     fn fitness(&self) -> f64 {
-        self.oa.delta_fitness()
+        self.oa.fitness()
     }
 }
 #[test]
 fn mutation() {
     let mut r = thread_rng();
     let mut a = GAOArray {
-        oa: OArray::new_random_balanced(8, 4, 3, &mut r),
+        oa: OArray::new_random_balanced(8, 4, 3, &mut r, oarray::FitnessFunction::DeltaFast),
         mutation_prob: 0.5,
     };
     let b = a.clone();
@@ -106,15 +107,15 @@ fn balanced_crossover_test() {
     let mut r = thread_rng();
     for _ in 0..100 {
         let mut a = GAOArray {
-            oa: OArray::new_random_balanced(8, 1, 1, &mut r),
+            oa: OArray::new_random_balanced(8, 1, 1, &mut r, oarray::FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
         let mut b = GAOArray {
-            oa: OArray::new_random_balanced(8, 1, 1, &mut r),
+            oa: OArray::new_random_balanced(8, 1, 1, &mut r, oarray::FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
         let mut c = GAOArray {
-            oa: OArray::new_random_balanced(8, 1, 1, &mut r),
+            oa: OArray::new_random_balanced(8, 1, 1, &mut r, oarray::FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
         assert!(is_balanced(&a.oa.d));

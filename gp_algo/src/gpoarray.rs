@@ -1,6 +1,6 @@
 use evco::gp::tree::*;
 use evco::gp::*;
-use oarray::OArray;
+use oarray::{OArray, FitnessFunction};
 use rand::Rng;
 use spiril::unit::Unit;
 use std::fmt::{Display, Error, Formatter};
@@ -18,6 +18,7 @@ pub struct GPOArray<R: Rng> {
     mutation: Mutation,
     mutation_prob: f64,
     tree_gen: TreeGen<R>,
+    fitness_f: FitnessFunction
 }
 
 struct BinaryStringIterator {
@@ -57,7 +58,8 @@ impl<R: Rng + Send> GPOArray<R> {
         rng: R,
         crossover: Crossover,
         mutation: Mutation,
-        mutation_prob: f64
+        mutation_prob: f64,
+        fitness_f: FitnessFunction
     ) -> Self {
         let mut trees = Vec::with_capacity(k);
         let mut tree_gen = TreeGen::perfect(rng, 1, max_depth);
@@ -76,7 +78,8 @@ impl<R: Rng + Send> GPOArray<R> {
             crossover,
             mutation,
             tree_gen,
-            mutation_prob
+            mutation_prob,
+            fitness_f
         }
     }
     pub fn to_oarray(&self) -> OArray {
@@ -86,7 +89,7 @@ impl<R: Rng + Send> GPOArray<R> {
                 oa_data.push(self.trees[col].tree.evaluate(&env));
             }
         }
-        OArray::new(self.ngrande, self.k, self.target_t, oa_data)
+        OArray::new(self.ngrande, self.k, self.target_t, oa_data, self.fitness_f)
     }
     pub fn mutate(&mut self) {
         let config = TreeFormulaConfig {
@@ -102,7 +105,7 @@ impl<R: Rng + Send> GPOArray<R> {
 impl<R: Rng + Send + Clone> Unit for GPOArray<R> {
     fn fitness(&self) -> f64 {
         let oa = self.to_oarray();
-        let delta_grande = oa.delta_fitness();
+        let oa_fit = oa.fitness();
         let mut tot = 0i64;
         for col in oa.iter_cols() {
             let mut acc = 0i64;
@@ -115,7 +118,7 @@ impl<R: Rng + Send + Clone> Unit for GPOArray<R> {
             }
             tot += acc.abs();
         }
-        delta_grande - (tot as f64)
+        oa_fit - (tot as f64)
     }
     fn breed_with(&self, other: &Self) -> Self {
         assert!(self.n == other.n);
