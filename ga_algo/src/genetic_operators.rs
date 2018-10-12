@@ -1,4 +1,4 @@
-use oarray::OArray;
+use oarray::{OArray, FitnessFunction};
 use rand::thread_rng;
 use rand::Rng;
 use spiril::unit::Unit;
@@ -90,7 +90,7 @@ impl Unit for GAOArray {
 fn mutation() {
     let mut r = thread_rng();
     let mut a = GAOArray {
-        oa: OArray::new_random_balanced(8, 4, 3, &mut r, oarray::FitnessFunction::DeltaFast),
+        oa: OArray::new_random_balanced(8, 4, 3, &mut r, FitnessFunction::DeltaFast),
         mutation_prob: 0.5,
     };
     let b = a.clone();
@@ -107,15 +107,15 @@ fn balanced_crossover_test() {
     let mut r = thread_rng();
     for _ in 0..100 {
         let mut a = GAOArray {
-            oa: OArray::new_random_balanced(8, 1, 1, &mut r, oarray::FitnessFunction::DeltaFast),
+            oa: OArray::new_random_balanced(8, 1, 1, &mut r, FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
         let mut b = GAOArray {
-            oa: OArray::new_random_balanced(8, 1, 1, &mut r, oarray::FitnessFunction::DeltaFast),
+            oa: OArray::new_random_balanced(8, 1, 1, &mut r, FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
         let mut c = GAOArray {
-            oa: OArray::new_random_balanced(8, 1, 1, &mut r, oarray::FitnessFunction::DeltaFast),
+            oa: OArray::new_random_balanced(8, 1, 1, &mut r, FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
         assert!(is_balanced(&a.oa.d));

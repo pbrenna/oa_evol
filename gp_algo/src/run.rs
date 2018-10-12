@@ -7,6 +7,7 @@ use spiril::unit::Unit;
 use std::f64;
 use gpoarray::GPOArray;
 use spiril::epoch::DefaultEpoch;
+use oarray::FitnessFunction;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct RunParameters {
@@ -19,7 +20,7 @@ pub(crate) struct RunParameters {
     pub breed_factor: f64,
     pub survival_factor: f64,
     pub epochs: usize,
-    pub fitness_f: oarray::FitnessFunction
+    pub fitness_f: FitnessFunction
 }
 
 

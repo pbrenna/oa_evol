@@ -5,7 +5,7 @@ use std::f64;
 //use epoch::TournamentEpoch;
 
 use genetic_operators::GAOArray;
-use oarray::OArray;
+use oarray::{OArray, FitnessFunction};
 use rand::thread_rng;
 use pbr::ProgressBar;
 
@@ -19,7 +19,7 @@ pub(crate) struct RunParameters {
     pub breed_factor: f64,
     pub survival_factor: f64,
     pub epochs: usize,
-    pub fitness_f: oarray::FitnessFunction
+    pub fitness_f: FitnessFunction
 }
 
 pub(crate) fn run(p: &RunParameters, show_progress: bool) -> bool {
