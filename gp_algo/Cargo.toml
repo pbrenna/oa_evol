@@ -3,7 +3,6 @@ authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 name = "gp"
 version = "0.1.0"
 [dependencies]
-clap = "2.32.0"
 pbr = "1.0.1"
 rand = "0.5.5"
 log="0.4.5"
@@ -19,3 +18,9 @@ path = "../oarray/"
 [dependencies.spiril]
 branch = "master"
 git = "https://github.com/pbrenna/spiril"
+
+
+[dependencies.clap]
+version = "2.32.0"
+default-features = false
+features = ["color" ]
