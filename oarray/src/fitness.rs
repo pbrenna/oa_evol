@@ -1,7 +1,6 @@
 use oarray::OArray;
-use t_combinations::Combinations;
 use streaming_iterator::StreamingIterator;
-
+use t_combinations::Combinations;
 
 #[derive(Clone, Debug, Copy)]
 pub enum FitnessFunction {
@@ -34,7 +33,7 @@ impl OArray {
         match self.fitness_f {
             Delta => self.delta_fitness(),
             DeltaFast => self.delta_fitness_fast(),
-            Walsh(exponent) => self.walsh_fitness(exponent)
+            Walsh(exponent) => self.walsh_fitness(exponent),
         }
     }
 
@@ -87,12 +86,13 @@ impl OArray {
     fn walsh_fitness(&self, exp: u32) -> f64 {
         let t = self.target_t;
         let mut grand_tot = 0;
+        let rows: Vec<Vec<&bool>> = self.iter_rows().collect();
         for w in 1..=t {
             let mut combs = Combinations::new(self.k, w);
             let mut comb_iter = combs.stream_iter();
             while let Some(comb) = comb_iter.next() {
                 let mut vec_tot = 0i64;
-                for u in self.iter_rows() {
+                for u in &rows {
                     let prod = comb.iter().map(|i| u[*i]).fold(false, |acc, cur| acc ^ cur);
                     vec_tot += if prod { -1 } else { 1 };
                 }
@@ -103,8 +103,6 @@ impl OArray {
     }
 }
 
-
-
 #[allow(unused_macros)]
 macro_rules! bool_vec {
     ($($x:expr),*) => {
@@ -112,42 +110,47 @@ macro_rules! bool_vec {
     };
 }
 
-#[test]
-fn check_fitness1() {
-    let test = OArray::new(4, 2, 2, bool_vec![0, 0, 1, 1, 0, 1, 0, 1], DeltaFast);
-    assert!(test.delta_fitness_fast() == 0.0);
-    assert!(test.walsh_fitness(2) == 0.0);
-}
-
-#[test]
-fn check_fast_delta() {
-    use std::f64::EPSILON;
+#[cfg(test)]
+mod test {
+    use OArray;
+    use FitnessFunction::*;
     use rand::thread_rng;
-    let mut rng = thread_rng();
-    let error = EPSILON;
-    for _ in 0..100 {
-        let rand = OArray::new_random_balanced(8, 7, 3, &mut rng, DeltaFast);
-        assert!((rand.delta_fitness() - rand.delta_fitness_fast()).abs() < error);
+    use std::f64::EPSILON;
+    #[test]
+    fn check_fitness1() {
+        let test = OArray::new(4, 2, 2, bool_vec![0, 0, 1, 1, 0, 1, 0, 1], DeltaFast);
+        assert!(test.delta_fitness_fast() == 0.0);
+        assert!(test.walsh_fitness(2) == 0.0);
     }
-}
 
-#[test]
-fn check_fitness2() {
-    let test = OArray::new(4, 2, 1, bool_vec![0, 1, 1, 1, 0, 1, 0, 1], DeltaFast);
-    assert!(test.delta_fitness_fast() != 0.0);
-    assert!(test.walsh_fitness(2) != 0.0);
-}
+    #[test]
+    fn check_fast_delta() {
+        use rand::thread_rng;
+        use std::f64::EPSILON;
+        let mut rng = thread_rng();
+        let error = EPSILON;
+        for _ in 0..100 {
+            let rand = OArray::new_random_balanced(8, 7, 3, &mut rng, DeltaFast);
+            assert!((rand.delta_fitness() - rand.delta_fitness_fast()).abs() < error);
+        }
+    }
 
-#[test]
-fn test_walsh() {
-    use rand::thread_rng;
-    use std::f64::EPSILON;
-    let mut rng = thread_rng();
-    let error = EPSILON;
-    for _ in 0..1000 {
-        let rand = OArray::new_random_balanced(8, 7, 3, &mut rng, DeltaFast);
-        let delta_is_zero = -rand.delta_fitness_fast() < error;
-        let walsh_is_zero = -rand.walsh_fitness(2) < error;
-        assert!(delta_is_zero == walsh_is_zero);
+    #[test]
+    fn check_fitness2() {
+        let test = OArray::new(4, 2, 1, bool_vec![0, 1, 1, 1, 0, 1, 0, 1], DeltaFast);
+        assert!(test.delta_fitness_fast() != 0.0);
+        assert!(test.walsh_fitness(2) != 0.0);
+    }
+
+    #[test]
+    fn test_walsh() {
+        let mut rng = thread_rng();
+        let error = EPSILON;
+        for _ in 0..1000 {
+            let rand = OArray::new_random_balanced(8, 7, 3, &mut rng, DeltaFast);
+            let delta_is_zero = -rand.delta_fitness_fast() < error;
+            let walsh_is_zero = -rand.walsh_fitness(2) < error;
+            assert!(delta_is_zero == walsh_is_zero);
+        }
     }
 }
