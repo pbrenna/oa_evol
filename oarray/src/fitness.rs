@@ -32,12 +32,14 @@ impl OArray {
         -asd
     }
     pub fn fitness(&self) -> f64 {
-        match self.fitness_f {
+        let ret = match self.fitness_f {
             Delta => self.delta_fitness(),
             DeltaFast => self.delta_fitness_fast(),
             Walsh(exponent) => self.walsh_fitness(exponent),
             WalshFaster(exponent) => self.walsh_faster(exponent)
-        }
+        };
+        assert!(ret <= 0.0, "overflow");
+        ret
     }
 
     /// conta il numero di occorrenze di `needle` nelle colonne `igrande` dell'array,

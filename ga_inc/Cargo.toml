@@ -1,0 +1,17 @@
+[package]
+authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
+name = "ga_inc"
+version = "0.1.0"
+
+[dependencies]
+log="0.4.5"
+simplelog="0.5.2"
+pbr = "1.0.1"
+rand = "0.5.5"
+oarray = {path = "../oarray/"}
+spiril = {git = "https://github.com/pbrenna/spiril", branch="master"}
+
+[dependencies.clap]
+version = "2.32.0"
+default-features = false
+features = ["color" ]
