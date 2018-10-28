@@ -68,7 +68,6 @@ impl OArray {
         out
     }
 
-
     pub fn iter_cols(&self) -> impl Iterator<Item = &[bool]> {
         self.d.chunks(self.ngrande)
     }
@@ -80,7 +79,7 @@ impl OArray {
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
 
-    pub fn check_linear(&self) -> bool {
+    /*pub fn check_linear_cols(&self) -> bool {
         let cols: Vec<&[bool]> = self.iter_cols().collect();
         for a in 0..self.k {
             for b in a + 1..self.k {
@@ -90,6 +89,31 @@ impl OArray {
                     .map(|(&a, &b)| a ^ b)
                     .collect();
                 if !cols.iter().any(|&row| row == xor.as_slice()) {
+                    return false;
+                }
+            }
+        }
+        true
+    }*/
+    pub fn check_linear(&self) -> bool {
+        let rows: Vec<Vec<&bool>> = self.iter_rows().collect();
+        let has_row = |xor| {
+            rows.iter().any(|row| {
+                let v: Vec<bool> = row.iter().map(|&i| *i).collect();
+                v == xor
+            })
+        };
+        if !has_row(vec![false; self.k]) {
+            return false;
+        }
+        for a in 0..self.ngrande {
+            for b in a + 1..self.ngrande {
+                let xor: Vec<bool> = rows[a]
+                    .iter()
+                    .zip(rows[b].iter())
+                    .map(|(&a, &b)| a ^ b)
+                    .collect();
+                if !has_row(xor) {
                     return false;
                 }
             }
@@ -112,7 +136,7 @@ impl Display for OArray {
                 lambda = self.lambda,
                 fit=d_fit,
                 fitness_f=self.fitness_f,
-                lin=self.check_linear()
+                lin=self.check_linear(),
             )?;
         }
         for row in self.iter_rows() {
@@ -135,4 +159,3 @@ fn new_random() {
         assert!(num0 == num1);
     }
 }
-
