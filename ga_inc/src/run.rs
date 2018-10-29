@@ -3,7 +3,8 @@ use spiril::{epoch::DefaultEpoch, population::Population, unit::Unit};
 use std::f64;
 
 //mod epoch;
-//use epoch::TournamentEpoch;
+use epoch::TournamentEpoch;
+use spiril::epoch::Epoch;
 
 use genetic_operators::{generate_partial, IncGAOArray};
 use oarray::FitnessFunction;
@@ -22,20 +23,16 @@ pub(crate) struct RunParameters {
     pub fitness_f: FitnessFunction,
 }
 
-pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
+pub(crate) fn run(
+    p: &RunParameters,
+    show_progress: bool,
+
+) -> (bool, bool) {
     let ngrande = 2usize.pow(p.n as u32);
-    let backtrack = false;
     let mut partial = generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
-    let mut depth_stack = vec![0; p.k];
+    let epoch = TournamentEpoch{};
     while k_current < p.k {
-        assert!(partial.d.len() == partial.ngrande * k_current);
-        //println!("{}", partial);
-        let max_tries = 2; //k_current - p.t as usize;
-        depth_stack[k_current] += 1;
-        for i in depth_stack[k_current+1 ..].iter_mut(){
-            *i = 0;
-        }
         let best;
         {
             let mut units: Vec<IncGAOArray> = Vec::with_capacity(p.pop_size);
@@ -45,8 +42,6 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
 
             let mut pbar = ProgressBar::new(p.epochs as u64);
 
-            //let epoch = TournamentEpoch::new();
-            let epoch = DefaultEpoch::new(p.breed_factor, p.survival_factor);
             let f = Population::new(units)
                 .set_size(p.pop_size)
                 .register_callback(Box::new(move |i, j| {
@@ -61,7 +56,8 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
                         return false;
                     }
                     true
-                })).epochs(p.epochs as u32, &epoch)
+                }))
+                .epochs(p.epochs as u32, &epoch)
                 .finish();
             //we have a suitable N * k_current array
 
@@ -72,14 +68,10 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
                 .complete_oa();
         }
         if -best.fitness() < f64::EPSILON {
+            //println!("{:?}", &best.d[best.ngrande * (best.k - 1)..]);
             partial = best;
-        } else if depth_stack[k_current] > max_tries {
-            if k_current > p.t  as usize && backtrack  {
-                partial.d = Vec::from(&partial.d[0..partial.ngrande * (k_current - 1)]);
-                partial.k -= 1;
-            } else {
-                return (false, false);
-            }
+        } else {
+            return (false, false);
         }
         k_current = partial.k;
     }
@@ -87,6 +79,7 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
         debug!("{}", partial);
         (true, partial.check_linear())
     } else {
+        println!("ASD1");
         (false, false)
     }
 }

@@ -6,6 +6,7 @@ extern crate spiril;
 #[macro_use]
 extern crate log;
 extern crate simplelog;
+extern crate streaming_iterator;
 
 use clap::{App, Arg};
 use simplelog::*;
@@ -15,6 +16,7 @@ use std::thread;
 mod run;
 mod genetic_operators;
 use run::run;
+mod epoch;
 
 macro_rules! get_arg {
     ($matches: expr, $x:expr, $type: ident) => {

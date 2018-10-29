@@ -9,7 +9,12 @@ simplelog="0.5.2"
 pbr = "1.0.1"
 rand = "0.5.5"
 oarray = {path = "../oarray/"}
-spiril = {git = "https://github.com/pbrenna/spiril", branch="master"}
+streaming-iterator = "0.1.4"
+
+[dependencies.spiril]
+#path = "../../spiril/"
+branch = "master"
+git = "https://github.com/pbrenna/spiril"
 
 [dependencies.clap]
 version = "2.32.0"
