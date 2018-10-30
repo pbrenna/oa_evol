@@ -16,8 +16,6 @@ pub(crate) struct RunParameters {
     pub t: u32,
     pub pop_size: usize,
     pub mutation_prob: f64,
-    pub breed_factor: f64,
-    pub survival_factor: f64,
     pub epochs: usize,
     pub fitness_f: FitnessFunction,
 }

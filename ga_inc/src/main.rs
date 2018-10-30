@@ -65,18 +65,6 @@ fn main() {
                 .default_value("0.2"),
         )
         .arg(
-            Arg::with_name("breed-factor")
-                .long("breed-factor")
-                .help("Fraction of breeders (the most fit will be chosen) in the total population ")
-                .default_value("0.2"),
-        )
-        .arg(
-            Arg::with_name("survival-factor")
-                .long("survival-factor")
-                .help("Fractions of individuals who will survive to the next epoch")
-                .default_value("0.8"),
-        )
-        .arg(
             Arg::with_name("runs")
                 .long("runs")
                 .help("Number of runs in the campaign")
@@ -122,8 +110,6 @@ fn main() {
         epochs: get_arg!(matches, "epochs", usize),
         pop_size: get_arg!(matches, "pop-size", usize),
         mutation_prob: get_arg!(matches, "mutation-prob", f64),
-        breed_factor: get_arg!(matches, "breed-factor", f64),
-        survival_factor: get_arg!(matches, "survival-factor", f64),
         fitness_f : f
     };
     let runs = get_arg!(matches, "runs", usize);
