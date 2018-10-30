@@ -35,6 +35,7 @@ pub(crate) fn run(
     while k_current < p.k {
         let num_epochs = p.epochs * (k_current + 1 - p.t as usize);
         let best;
+        let mut cnt = 0;
         {
             let mut units: Vec<IncGAOArray> = Vec::with_capacity(p.pop_size);
             for _ in 0..p.pop_size {
@@ -46,13 +47,14 @@ pub(crate) fn run(
             let f = Population::new(units)
                 .set_size(p.pop_size)
                 .register_callback(Box::new(move |i, j| {
-                    if show_progress {
+                    if show_progress && cnt % 100 == 0 {
                         pbar.message(&format!(
                             " Col: {}, Best: {:.4}, Mean: {:.4}; iteration ",
                             k_current, i, j
                         ));
-                        (&mut pbar).inc();
+                        (&mut pbar).set(cnt);
                     }
+                    cnt += 1;
                     if -i < f64::EPSILON {
                         return false;
                     }
