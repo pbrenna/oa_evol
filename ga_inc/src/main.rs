@@ -32,8 +32,8 @@ fn main() {
     let matches = App::new("GA run")
         .about("Run the Genetic Algorithm")
         .arg(
-            Arg::with_name("n")
-                .help("log₂ of N, the height of the OA. (N = 2ⁿ)")
+            Arg::with_name("N")
+                .help("the height of the OA. Must be multiple of 2^t")
                 .required(true),
         )
         .arg(
@@ -108,8 +108,6 @@ fn main() {
         )
         .get_matches();
 
-    let n = get_arg!(matches, "n", usize);
-
     let f = match matches.value_of("fitness").unwrap() {
         "Delta" => oarray::FitnessFunction::Delta,
         "DeltaFast" => oarray::FitnessFunction::DeltaFast,
@@ -118,7 +116,7 @@ fn main() {
         _ => panic!("Invalid function name")
     };
     let params = run::RunParameters {
-        n,
+        ngrande: get_arg!(matches, "N", usize),
         k: get_arg!(matches, "k", usize),
         t: get_arg!(matches, "t", u32),
         epochs: get_arg!(matches, "epochs", usize),
@@ -149,7 +147,7 @@ fn main() {
 
     info!(
         "Looking for OA[N: {}, k: {}, s: 2, t: {}]",
-        2usize.pow(params.n as u32),
+        params.ngrande,
         params.k,
         params.t
     );

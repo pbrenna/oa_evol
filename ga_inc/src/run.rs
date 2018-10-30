@@ -11,7 +11,7 @@ use pbr::ProgressBar;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct RunParameters {
-    pub n: usize,
+    pub ngrande: usize,
     pub k: usize,
     pub t: u32,
     pub pop_size: usize,
@@ -27,11 +27,13 @@ pub(crate) fn run(
     show_progress: bool,
 
 ) -> (bool, bool) {
-    let ngrande = 2usize.pow(p.n as u32);
+    let ngrande = p.ngrande;
+    assert!(ngrande % (2usize.pow(p.t)) == 0, "2^t non divide N");
     let mut partial = generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
     let epoch = TournamentEpoch::new();
     while k_current < p.k {
+        let num_epochs = p.epochs * (k_current + 1 - p.t as usize);
         let best;
         {
             let mut units: Vec<IncGAOArray> = Vec::with_capacity(p.pop_size);
@@ -39,7 +41,7 @@ pub(crate) fn run(
                 units.push(IncGAOArray::new(&partial, p.mutation_prob, p.k));
             }
 
-            let mut pbar = ProgressBar::new(p.epochs as u64);
+            let mut pbar = ProgressBar::new(num_epochs as u64);
 
             let f = Population::new(units)
                 .set_size(p.pop_size)
@@ -56,7 +58,7 @@ pub(crate) fn run(
                     }
                     true
                 }))
-                .epochs(p.epochs as u32, &epoch)
+                .epochs(num_epochs as u32, &epoch)
                 .finish();
             //we have a suitable N * k_current array
 
