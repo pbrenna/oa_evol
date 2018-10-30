@@ -1,4 +1,4 @@
-use oarray::t_combinations::Combinations;
+use oarray::t_combinations;
 use oarray::FitnessFunction::{self, *};
 use oarray::OArray;
 use rand::thread_rng;
@@ -68,7 +68,7 @@ impl<'a> IncGAOArray<'a> {
             .pow(exp)
             .abs();
         let tmp0 = self.last_col.clone();
-        oarray::t_combinations::combinations_descent(
+            t_combinations::combinations_descent(
             self.partial.k,
             self.partial.target_t as usize - 1,
             0,
@@ -99,7 +99,7 @@ impl<'a> IncGAOArray<'a> {
             .abs();
         let rows: Vec<Vec<&bool>> = self.partial.iter_rows().collect();
         for w in 1..self.partial.target_t {
-            let mut combs = Combinations::new(self.partial.k, w);
+            let mut combs = t_combinations::Combinations::new(self.partial.k, w);
             let mut comb_iter = combs.stream_iter();
             while let Some(comb) = comb_iter.next() {
                 let mut vec_tot = 0i64;
