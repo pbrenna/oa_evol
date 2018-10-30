@@ -1,10 +1,9 @@
-use spiril::{epoch::DefaultEpoch, population::Population, unit::Unit};
+use spiril::{population::Population, unit::Unit};
 //use std::cmp;
 use std::f64;
 
 //mod epoch;
 use epoch::TournamentEpoch;
-use spiril::epoch::Epoch;
 
 use genetic_operators::{generate_partial, IncGAOArray};
 use oarray::FitnessFunction;
@@ -31,7 +30,7 @@ pub(crate) fn run(
     let ngrande = 2usize.pow(p.n as u32);
     let mut partial = generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
-    let epoch = TournamentEpoch{};
+    let epoch = TournamentEpoch::new();
     while k_current < p.k {
         let best;
         {
