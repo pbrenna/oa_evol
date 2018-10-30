@@ -4,8 +4,8 @@ use oarray::OArray;
 use rand::thread_rng;
 use rand::Rng;
 use spiril::unit::Unit;
-use std::iter::repeat;
 use std::f64;
+use std::iter::repeat;
 use streaming_iterator::StreamingIterator;
 
 /// Istanza di OArray dedicata all'algoritmo genetico: implementa
@@ -58,12 +58,47 @@ impl<'a> IncGAOArray<'a> {
         other.k += 1;
         other
     }
+    fn walsh_furba_faster(&self, exp: u32) -> f64 {
+        let cols: Vec<&[bool]> = self.partial.iter_cols().collect();
+        let mut grand_tot = self
+            .last_col
+            .iter()
+            .map(|&i| if i { -1 } else { 1 })
+            .sum::<i64>()
+            .pow(exp)
+            .abs();
+        let tmp0 = self.last_col.clone();
+        oarray::t_combinations::combinations_descent(
+            self.partial.k,
+            self.partial.target_t as usize - 1,
+            0,
+            0,
+            &tmp0,
+            &mut |i, tmp| {
+                let tmp1: Vec<bool> = cols[i].iter().zip(tmp.iter()).map(|(a, b)| a ^ b).collect();
+                let mut my_tot = 0i64;
+                for x in &tmp1 {
+                    my_tot += if *x { 1 } else { -1 };
+                }
+                //println!("{:?}, {:?}", my_tot, tmp1);
+                grand_tot += my_tot.pow(exp).abs();
+                tmp1
+            },
+        );
+        -grand_tot as f64
+    }
     fn walsh_furba(&self, exp: u32) -> f64 {
         //per tutte le combinazioni che non includono last_col, la fitness deve
         //essere 0
-        let mut grand_tot = 0;
+        let mut grand_tot = self
+            .last_col
+            .iter()
+            .map(|&i| if i { -1 } else { 1 })
+            .sum::<i64>()
+            .pow(exp)
+            .abs();
         let rows: Vec<Vec<&bool>> = self.partial.iter_rows().collect();
-        for w in 0..self.partial.target_t {
+        for w in 1..self.partial.target_t {
             let mut combs = Combinations::new(self.partial.k, w);
             let mut comb_iter = combs.stream_iter();
             while let Some(comb) = comb_iter.next() {
@@ -115,12 +150,8 @@ impl<'a> Unit for IncGAOArray<'a> {
 
     fn fitness(&self) -> f64 {
         match self.partial.fitness_f {
-            Walsh(x) | WalshFaster(x) => {
-                let a = self.walsh_furba(x);
-                //let b = self.complete_oa().fitness();
-                //assert!(a == b, "{} != {}", a, b);
-                a
-                },
+            Walsh(x) => self.walsh_furba(x),
+            WalshFaster(x) => self.walsh_furba_faster(x),
             _ => self.complete_oa().fitness(),
         }
     }
@@ -138,4 +169,30 @@ pub fn generate_partial(ngrande: usize, target_t: u32, fitness_f: FitnessFunctio
         d.append(&mut dati_colonna);
     }
     OArray::new(ngrande, target_t as usize, target_t, d, fitness_f)
+}
+
+#[test]
+fn test_furba() {
+    for _ in 0..10000 {
+        let p = generate_partial(16, 4, Walsh(2));
+        let rnd = IncGAOArray::new(&p, 0.1, 5);
+        let mut oa = rnd.complete_oa();
+        let fitw = oa.fitness();
+        oa.fitness_f = WalshFaster(2);
+        let fitwfa = oa.fitness();
+
+        let fitwfu = rnd.walsh_furba(2);
+        let fitwfufa = rnd.walsh_furba_faster(2);
+        let error = f64::EPSILON;
+        assert!(
+            (fitw - fitwfa).abs() < error
+                && (fitwfa - fitwfu).abs() < error
+                && (fitwfu - fitwfufa).abs() < error,
+            "{}, {}, {}, {}",
+            fitw,
+            fitwfa,
+            fitwfu,
+            fitwfufa
+        );
+    }
 }
