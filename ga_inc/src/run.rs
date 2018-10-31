@@ -5,8 +5,8 @@ use std::f64;
 //mod epoch;
 use epoch::TournamentEpoch;
 
-use genetic_operators::{generate_partial, IncGAOArray};
-use oarray::FitnessFunction;
+use genetic_operators::IncGAOArray;
+use oarray::{FitnessFunction, OArray};
 use pbr::ProgressBar;
 
 #[derive(Debug, Clone, Copy)]
@@ -20,14 +20,10 @@ pub(crate) struct RunParameters {
     pub fitness_f: FitnessFunction,
 }
 
-pub(crate) fn run(
-    p: &RunParameters,
-    show_progress: bool,
-
-) -> (bool, bool) {
+pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     let ngrande = p.ngrande;
     assert!(ngrande % (2usize.pow(p.t)) == 0, "2^t non divide N");
-    let mut partial = generate_partial(ngrande, p.t, p.fitness_f);
+    let mut partial = OArray::generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
     let epoch = TournamentEpoch::new();
     while k_current < p.k {
@@ -57,8 +53,7 @@ pub(crate) fn run(
                         return false;
                     }
                     true
-                }))
-                .epochs(num_epochs as u32, &epoch)
+                })).epochs(num_epochs as u32, &epoch)
                 .finish();
             //we have a suitable N * k_current array
 

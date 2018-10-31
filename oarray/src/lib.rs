@@ -7,3 +7,4 @@ pub mod t_combinations;
 pub use oarray::OArray;
 pub use fitness::FitnessFunction;
 mod parse;
+pub mod incremental;
