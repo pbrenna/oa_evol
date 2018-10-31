@@ -1,14 +1,14 @@
-use spiril::{population::Population, unit::Unit};
+use spiril::{epoch::DefaultEpoch, population::Population, unit::Unit};
 //use std::cmp;
-use std::f64;
 use evco::gp::*;
 use rand::OsRng;
+use std::f64;
 
 //mod epoch;
 use epoch::TournamentEpoch;
 
 use gpoarray::IncGPOArray;
-use oarray::{OArray, FitnessFunction};
+use oarray::{FitnessFunction, OArray};
 use pbr::ProgressBar;
 //use treeformula::TreeFormula;
 
@@ -30,10 +30,12 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     let mut partial = OArray::generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
     let epoch = TournamentEpoch::new();
+    let epoch = DefaultEpoch::default();
     let crossover = Crossover::hard_prune(p.max_depth);
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
     let mutation = Mutation::uniform();
     let rng = OsRng::new().unwrap();
+    let mut formulas = Vec::new();
     while k_current < p.k {
         let num_epochs = p.epochs * (k_current + 1 - p.t as usize);
         let best;
@@ -76,14 +78,16 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
                 .finish();
             //we have a suitable N * k_current array
 
-            best = f
+            let best1 = f
                 .iter()
                 .max_by(|&a, &b| a.fitness().partial_cmp(&b.fitness()).unwrap())
-                .unwrap()
-                .to_oarray();
+                .unwrap();
+            formulas.push(best1.tree.clone());
+            best = best1.to_oarray();
         }
         if -best.fitness() < f64::EPSILON {
             //println!("{:?}", &best.d[best.ngrande * (best.k - 1)..]);
+
             partial = best;
         } else {
             println!("ASD2: {}", -best.fitness());
@@ -93,6 +97,9 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     }
     if -partial.fitness() < f64::EPSILON && partial.k == p.k {
         debug!("{}", partial);
+        for (i, f) in formulas.iter().enumerate() {
+            debug!("Formula {}: {}", i + 1, f);
+        }
         (true, partial.check_linear())
     } else {
         println!("ASD1");
