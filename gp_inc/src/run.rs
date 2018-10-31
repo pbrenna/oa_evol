@@ -90,7 +90,6 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
 
             partial = best;
         } else {
-            println!("ASD2: {}", -best.fitness());
             return (false, false);
         }
         k_current = partial.k;
