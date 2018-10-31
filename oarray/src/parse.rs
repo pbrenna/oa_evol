@@ -52,7 +52,7 @@ fn test_parse2() {
                   1 0 1
                   0 1 
                   1 0 0";
-    let oa = OArray::from(string);
+    let _ = OArray::from(string);
 }
 #[should_panic]
 #[test]
@@ -61,5 +61,5 @@ fn test_parse3() {
                   1 0 1
                   0 1 2
                   1 0 0";
-    let oa = OArray::from(string);
+    let _ = OArray::from(string);
 }
