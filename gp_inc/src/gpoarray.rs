@@ -1,3 +1,4 @@
+use binary_strings::BinaryStringIterator;
 use evco::gp::tree::*;
 use evco::gp::*;
 use oarray::{
@@ -8,7 +9,6 @@ use rand::Rng;
 use spiril::unit::Unit;
 use std::fmt::{Display, Error, Formatter};
 use treeformula::{TreeFormula, TreeFormulaConfig};
-use binary_strings::BinaryStringIterator;
 
 #[derive(Clone)]
 pub struct IncGPOArray<'a, R: Rng> {
@@ -61,9 +61,11 @@ impl<'a, R: Rng + Send> IncGPOArray<'a, R> {
     pub fn to_oarray(&self) -> OArray {
         let mut oa = self.partial.clone();
         oa.k += 1;
-        for env in BinaryStringIterator::new(self.n) {
-            oa.d.push(self.tree.tree.evaluate(&env));
-        }
+        oa.d.extend(
+            BinaryStringIterator::new(self.n)
+                .take(self.ngrande)
+                .map(|env| self.tree.tree.evaluate(&env)),
+        );
         oa
     }
     pub fn mutate(&mut self) {
@@ -74,7 +76,7 @@ impl<'a, R: Rng + Send> IncGPOArray<'a, R> {
             .mutate(&mut self.tree, &mut self.tree_gen, &config);
         self.lazy_fitness = None;
     }
-    fn oa_fitness(&self, last_col : &[bool]) -> f64 {
+    fn oa_fitness(&self, last_col: &[bool]) -> f64 {
         match self.partial.fitness_f {
             Walsh(x) => self.partial.walsh_incremental(x, last_col),
             WalshFaster(x) => self.partial.walsh_incremental_faster(x, last_col),
@@ -86,7 +88,8 @@ impl<'a, R: Rng + Send> IncGPOArray<'a, R> {
 impl<'a, R: Rng + Send + Clone> Unit for IncGPOArray<'a, R> {
     fn fitness(&self) -> f64 {
         let last_col: Vec<bool> = BinaryStringIterator::new(self.n)
-            .map(|env| self.tree.tree.evaluate(&env)).take(self.ngrande)
+            .take(self.ngrande)
+            .map(|env| self.tree.tree.evaluate(&env))
             .collect();
         let oa_fit = self.oa_fitness(&last_col);
         match self.partial.fitness_f {
