@@ -3,6 +3,7 @@
 members = [
     "oarray",
     "ga_algo",
+    "ga_hill",
     "ga_inc",
     "gp_algo",
     "gp_inc",

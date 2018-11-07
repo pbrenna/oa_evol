@@ -1,20 +1,21 @@
 use binary_strings::{hamming_weight, vec2usize, BinaryStringIterator};
 use oarray::OArray;
+use fitness::FitnessFunction;
 use std::fmt::{Display, Error, Formatter};
 
 pub struct TruthTable {
-    table: Vec<bool>,
-    log2len: usize,
+    pub table: Vec<bool>,
+    pub log2len: usize,
 }
 
 pub struct PolarTruthTable {
-    table: Vec<i32>,
-    log2len: usize,
+    pub table: Vec<i32>,
+    pub log2len: usize,
 }
 
 pub struct WalshTform {
-    table: Vec<i32>,
-    log2len: usize,
+    pub table: Vec<i32>,
+    pub log2len: usize,
 }
 
 impl TruthTable {
@@ -97,7 +98,25 @@ impl OArray {
         }
         TruthTable::new(out)
     }
+    pub fn from_truth_table(truth: &TruthTable, ngrande:usize, target_t: u32, fitness_f : FitnessFunction) -> Option<Self> {
+        let k = truth.log2len;
+        let rows: Vec<usize> = truth
+            .table
+            .iter()
+            .enumerate()
+            .filter(|(_, &val)| val == true)
+            .map(|(ind, _)| ind)
+            .collect();
+        if rows.len() != ngrande {
+            return None;
+        }
+        let d: Vec<bool> = (1..=k)
+            .flat_map(|col| rows.iter().map(move |row| row & (1 << (k - col)) != 0))
+            .collect();
+        Some(OArray::new(rows.len(), k, target_t, d, fitness_f))
+    }
 }
+
 fn walsh_tform_step(v: &mut [i32]) {
     let half = v.len() / 2;
     for i in 0..half {
