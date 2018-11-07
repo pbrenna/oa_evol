@@ -1,4 +1,4 @@
-use spiril::{epoch::DefaultEpoch, population::Population, unit::Unit};
+use spiril::{population::Population, unit::Unit};
 //use std::cmp;
 use evco::gp::*;
 use rand::OsRng;

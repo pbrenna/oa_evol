@@ -1,4 +1,4 @@
-use binary_strings::BinaryStringIterator;
+use oarray::binary_strings::BinaryStringIterator;
 use evco::gp::tree::*;
 use evco::gp::*;
 use oarray::{

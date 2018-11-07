@@ -15,7 +15,6 @@ use std::fs::File;
 use std::thread;
 
 mod gpoarray;
-mod binary_strings;
 mod run;
 mod treeformula;
 use run::run;

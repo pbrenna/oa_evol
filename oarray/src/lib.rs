@@ -8,3 +8,5 @@ pub use oarray::OArray;
 pub use fitness::FitnessFunction;
 mod parse;
 pub mod incremental;
+pub mod wtform;
+pub mod binary_strings;

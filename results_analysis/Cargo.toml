@@ -7,6 +7,10 @@ authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 name = "is_linear"
 path = "src/is_linear.rs"
 
+[[bin]]
+name = "check_boolfun_props"
+path = "src/check_boolfun_props.rs"
+
 
 [dependencies]
 [dependencies.oarray]

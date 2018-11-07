@@ -57,6 +57,12 @@ impl Iterator for BinaryStringIterator {
         ret
     }
 }
+pub fn hamming_weight(v: &[bool]) -> usize {
+    v.iter().filter(|&&v| v).count()
+}
+pub fn vec2usize(v: &[bool]) -> usize {
+    v.iter().fold(0usize, |acc, &val| {acc*2 + val as usize})
+}
 
 #[test]
 fn test123123() {
