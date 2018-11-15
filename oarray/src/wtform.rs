@@ -1,6 +1,6 @@
 use binary_strings::{hamming_weight, vec2usize, BinaryStringIterator};
-use oarray::OArray;
 use fitness::FitnessFunction;
+use oarray::OArray;
 use std::fmt::{Display, Error, Formatter};
 
 pub struct TruthTable {
@@ -98,7 +98,12 @@ impl OArray {
         }
         TruthTable::new(out)
     }
-    pub fn from_truth_table(truth: &TruthTable, ngrande:usize, target_t: u32, fitness_f : FitnessFunction) -> Option<Self> {
+    pub fn from_truth_table(
+        truth: &TruthTable,
+        ngrande: usize,
+        target_t: u32,
+        fitness_f: FitnessFunction,
+    ) -> Option<Self> {
         let k = truth.log2len;
         let rows: Vec<usize> = truth
             .table
@@ -140,4 +145,19 @@ fn test_truth() {
     println!("{:?}", test);
     println!("{:?}", walsh_tform_step(&mut test));
     println!("{:?}", test);
+}
+
+#[test]
+fn test_from_truth() {
+    use fitness::FitnessFunction;
+    use rand::thread_rng;
+    let mut rng = thread_rng();
+    for _ in 0..1000 {
+        let r = OArray::new_random_balanced(8, 4, 2, &mut rng, FitnessFunction::Delta);
+        let tt = r.truth_table();
+        let r_new = OArray::from_truth_table(&tt, 8, 2, FitnessFunction::Delta);
+        if let Some(r_new) = r_new {
+            assert!(r_new.iter_rows().all(|r1| r.iter_rows().any(|r2| r1 == r2)));
+        }
+    }
 }

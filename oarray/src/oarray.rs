@@ -5,7 +5,7 @@ use std::fmt::{Display, Error, Formatter};
 
 use fitness::FitnessFunction;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
 pub struct OArray {
     pub ngrande: usize,

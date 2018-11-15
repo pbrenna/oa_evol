@@ -66,7 +66,7 @@ pub fn vec2usize(v: &[bool]) -> usize {
 
 #[test]
 fn test123123() {
-    let mut a = BinaryStringIterator::new(4);
+    let a = BinaryStringIterator::new(4);
     for x in a {
         println!("{:?}",x );
     }

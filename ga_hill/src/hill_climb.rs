@@ -122,9 +122,15 @@ impl GAOArray {
             if let Some(new_inner) = new {
                 debug!("Sostituisco");
                 self.oa = new_inner;
+                debug_assert!({
+                    let tform = PolarTruthTable::from(&truth).walsh_tform();
+                    let cidev_t_new = tform.cidev(self.oa.target_t as usize) as i32;
+                    info!("Old: {}, new: {}", cidev_t, cidev_t_new);
+                    cidev_t_new < cidev_t
+                });
             }
             //let new_f = self.oa.fitness();
-            //assert!(new_f >= old_f);
+            //assert!(new_f >= old_f, "A quanto pare, {} < {}", new_f, old_f);
         }
     }
 }

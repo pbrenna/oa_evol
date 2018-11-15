@@ -11,7 +11,7 @@ use pbr::ProgressBar;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct RunParameters {
-    pub n: usize,
+    pub ngrande: usize,
     pub k: usize,
     pub t: u32,
     pub pop_size: usize,
@@ -24,7 +24,8 @@ pub(crate) struct RunParameters {
 
 pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     let mut rng = thread_rng();
-    let ngrande = 2usize.pow(p.n as u32);
+    //let ngrande = 2usize.pow(p.n as u32);
+    let ngrande = p.ngrande;
     let units: Vec<GAOArray> = (0..p.pop_size)
         .map(|_i| GAOArray {
             oa: OArray::new_random_balanced(ngrande, p.k, p.t, &mut rng, p.fitness_f),

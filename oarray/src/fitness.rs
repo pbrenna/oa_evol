@@ -3,7 +3,7 @@ use streaming_iterator::StreamingIterator;
 use t_combinations::{combinations_descent, Combinations};
 
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum FitnessFunction {
     Delta,
     DeltaFast,
