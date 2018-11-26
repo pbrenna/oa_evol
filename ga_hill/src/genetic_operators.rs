@@ -78,7 +78,7 @@ impl Unit for GAOArray {
             mutation_prob: self.mutation_prob,
         };
         out.mutate_with_prob(self.mutation_prob, &mut rng);
-        out.hill_climb(self.mutation_prob);
+        out.hill_climb(1.0);
         out
     }
 

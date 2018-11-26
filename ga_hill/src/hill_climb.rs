@@ -1,11 +1,12 @@
 use genetic_operators::GAOArray;
+use oarray::binary_strings;
 use oarray::wtform::*;
 use oarray::OArray;
 use rand::{thread_rng, Rng};
 
 impl GAOArray {
     pub fn hill_climb(&mut self, prob: f64) {
-        if thread_rng().gen_range::<f64>(0.0,1.0) >= prob {
+        if thread_rng().gen_range::<f64>(0.0, 1.0) >= prob {
             return;
         }
         assert!(self.oa.k < 64);
@@ -43,7 +44,9 @@ impl GAOArray {
                 None
             };
             if let Some(vec) = v {
-                vec.push(index);
+                if binary_strings::usize_hamming_weight(index) <= self.oa.target_t as usize {
+                    vec.push(index);
+                }
             }
         }
         let mut found = None;
@@ -111,8 +114,9 @@ impl GAOArray {
             }
         }
         if let Some((i, j)) = found {
-            //let old_f = self.oa.fitness();
+            let old_f = self.oa.fitness();
             truth.table.swap(i, j);
+            let old_oa = self.oa.clone();
             let new = OArray::from_truth_table(
                 &truth,
                 self.oa.ngrande,
@@ -122,26 +126,42 @@ impl GAOArray {
             if let Some(new_inner) = new {
                 debug!("Sostituisco");
                 self.oa = new_inner;
-                debug_assert!({
-                    let tform = PolarTruthTable::from(&truth).walsh_tform();
-                    let cidev_t_new = tform.cidev(self.oa.target_t as usize) as i32;
-                    info!("Old: {}, new: {}", cidev_t, cidev_t_new);
-                    cidev_t_new < cidev_t
-                });
+                let new_f = self.oa.fitness();
+                let tform = PolarTruthTable::from(&truth).walsh_tform();
+                let cidev_t_new = tform.cidev(self.oa.target_t as usize) as i32;
+                debug_assert!(
+                    new_f >= old_f,
+                    "Old fitness:{}
+                    New fitness:{}
+                    Fitness function: {:?}
+                    Old cidev: {},
+                    New cidev: {},
+                    Old OA: \n{}
+                    New OA: \n{}",
+                    old_f,
+                    new_f,
+                    self.oa.fitness_f,
+                    cidev_t,
+                    cidev_t_new,
+                    old_oa,
+                    self.oa
+                );
             }
-            //let new_f = self.oa.fitness();
-            //assert!(new_f >= old_f, "A quanto pare, {} < {}", new_f, old_f);
         }
     }
 }
 fn scalar_prod(x1: usize, x2: usize) -> bool {
-    use std::mem::size_of;
     let mut prods = x1 & x2;
     let mut out = false;
-    let usize_bits = size_of::<usize>() * 8;
-    for _ in 0..usize_bits {
+    while prods != 0 {
         out ^= prods & 1 == 1;
         prods >>= 1;
     }
     out
+}
+
+#[test]
+fn test_scalar_prod() {
+    assert!(!scalar_prod(321, 552));
+    assert!(scalar_prod(321, 553));
 }

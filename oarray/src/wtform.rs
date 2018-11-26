@@ -140,7 +140,7 @@ fn test_truth() {
     use fitness::FitnessFunction;
     use rand::thread_rng;
     let mut rng = thread_rng();
-    let r = OArray::new_random_balanced(8, 4, 2, &mut rng, FitnessFunction::Delta);
+    //let r = OArray::new_random_balanced(8, 4, 2, &mut rng, FitnessFunction::Delta);
     let mut test = [1, -1, -1, 1, -1, 1, 1, -1];
     println!("{:?}", test);
     println!("{:?}", walsh_tform_step(&mut test));

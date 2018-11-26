@@ -12,6 +12,11 @@ name = "check_boolfun_props"
 path = "src/check_boolfun_props.rs"
 
 
+[[bin]]
+name = "gen_strings_of_weight"
+path = "src/gen_strings_of_weight.rs"
+
+
 [dependencies]
 [dependencies.oarray]
 path = "../oarray/"
