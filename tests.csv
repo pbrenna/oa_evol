@@ -1,0 +1,148 @@
+ga	DeltaFast			8,4,2	100
+ga	DeltaFast			8,4,3	100
+ga	DeltaFast			8,5,2	100
+ga	DeltaFast			8,7,2	80
+ga	DeltaFast			16,8,2	80
+ga	DeltaFast			16,8,3	2
+ga	DeltaFast			16,15,2	1
+					
+ga	WalshFast	2		8,4,2	100
+ga	WalshFast	2		8,4,3	100
+ga	WalshFast	2		8,5,2	100
+ga	WalshFast	2		8,7,2	100
+ga	WalshFast	2		16,8,2	73
+ga	WalshFast	2		16,8,3	100
+ga	WalshFast	2		16,15,2	15
+					
+ga	WalshFast	3		8,4,2	100
+ga	WalshFast	3		8,4,3	100
+ga	WalshFast	3		8,5,2	100
+ga	WalshFast	3		8,7,2	100
+ga	WalshFast	3		16,8,2	83
+ga	WalshFast	3		16,8,3	96
+ga	WalshFast	3		16,15,2	7
+					
+ga	WalshFast	4		8,4,2	100
+ga	WalshFast	4		8,4,3	100
+ga	WalshFast	4		8,5,2	100
+ga	WalshFast	4		8,7,2	100
+ga	WalshFast	4		16,8,2	80
+ga	WalshFast	4		16,8,3	100
+ga	WalshFast	4		16,15,2	6
+					
+ga	WalshFast	5		8,4,2	100
+ga	WalshFast	5		8,4,3	100
+ga	WalshFast	5		8,5,2	100
+ga	WalshFast	5		8,7,2	100
+ga	WalshFast	5		16,8,2	70
+ga	WalshFast	5		16,8,3	100
+ga	WalshFast	5		16,15,2	6
+					
+					
+gp	DeltaFast		2	8,4,2	100
+gp	DeltaFast		2	8,4,3	100
+gp	DeltaFast		2	8,5,2	100
+gp	DeltaFast		2	8,7,2	100
+gp	DeltaFast		2	16,8,2	100
+gp	DeltaFast		2	16,8,3	100
+gp	DeltaFast		2	16,15,2	0
+gp	DeltaFast		2	32,16,3	0
+					
+gp	DeltaFast		3	8,4,2	100
+gp	DeltaFast		3	8,4,3	100
+gp	DeltaFast		3	8,5,2	100
+gp	DeltaFast		3	8,7,2	100
+gp	DeltaFast		3	16,8,2	100
+gp	DeltaFast		3	16,8,3	100
+gp	DeltaFast		3	16,15,2	6
+gp	DeltaFast		3	32,16,3	0
+					
+gp	DeltaFast		4	8,4,2	100
+gp	DeltaFast		4	8,4,3	100
+gp	DeltaFast		4	8,5,2	100
+gp	DeltaFast		4	8,7,2	100
+gp	DeltaFast		4	16,8,2	100
+gp	DeltaFast		4	16,8,3	100
+gp	DeltaFast		4	16,15,2	6
+gp	DeltaFast		4	32,16,3	0
+					
+gp	WalshFast	2	2	8,4,2	100
+gp	WalshFast	2	2	8,4,3	100
+gp	WalshFast	2	2	8,5,2	100
+gp	WalshFast	2	2	8,7,2	100
+gp	WalshFast	2	2	16,8,2	100
+gp	WalshFast	2	2	16,8,3	100
+gp	WalshFast	2	2	16,15,2	0
+gp	WalshFast	2	2	32,16,3	0
+					
+gp	WalshFast	2	3	8,4,2	100
+gp	WalshFast	2	3	8,4,3	100
+gp	WalshFast	2	3	8,5,2	100
+gp	WalshFast	2	3	8,7,2	100
+gp	WalshFast	2	3	16,8,2	100
+gp	WalshFast	2	3	16,8,3	93
+gp	WalshFast	2	3	16,15,2	0
+gp	WalshFast	2	3	32,16,3	0
+					
+gp	WalshFast	2	4	8,4,2	100
+gp	WalshFast	2	4	8,4,3	100
+gp	WalshFast	2	4	8,5,2	100
+gp	WalshFast	2	4	8,7,2	100
+gp	WalshFast	2	4	16,8,2	100
+gp	WalshFast	2	4	16,8,3	93
+gp	WalshFast	2	4	16,15,2	3
+gp	WalshFast	2	4	32,16,3	0
+					
+gp	WalshFast	3	2	8,4,2	100
+gp	WalshFast	3	2	8,4,3	100
+gp	WalshFast	3	2	8,5,2	100
+gp	WalshFast	3	2	8,7,2	100
+gp	WalshFast	3	2	16,8,2	100
+gp	WalshFast	3	2	16,8,3	70
+gp	WalshFast	3	2	16,15,2	0
+gp	WalshFast	3	2	32,16,3	0
+					
+gp	WalshFast	3	3	8,4,2	100
+gp	WalshFast	3	3	8,4,3	100
+gp	WalshFast	3	3	8,5,2	100
+gp	WalshFast	3	3	8,7,2	100
+gp	WalshFast	3	3	16,8,2	100
+gp	WalshFast	3	3	16,8,3	70
+gp	WalshFast	3	3	16,15,2	0
+gp	WalshFast	3	3	32,16,3	0
+					
+gp	WalshFast	3	4	8,4,2	100
+gp	WalshFast	3	4	8,4,3	100
+gp	WalshFast	3	4	8,5,2	100
+gp	WalshFast	3	4	8,7,2	100
+gp	WalshFast	3	4	16,8,2	100
+gp	WalshFast	3	4	16,8,3	40
+gp	WalshFast	3	4	16,15,2	0
+gp	WalshFast	3	4	32,16,3	0
+					
+gp	WalshFast	4	2	8,4,2	100
+gp	WalshFast	4	2	8,4,3	100
+gp	WalshFast	4	2	8,5,2	100
+gp	WalshFast	4	2	8,7,2	100
+gp	WalshFast	4	2	16,8,2	100
+gp	WalshFast	4	2	16,8,3	13
+gp	WalshFast	4	2	16,15,2	0
+gp	WalshFast	4	2	32,16,3	0
+					
+gp	WalshFast	4	3	8,4,2	100
+gp	WalshFast	4	3	8,4,3	100
+gp	WalshFast	4	3	8,5,2	100
+gp	WalshFast	4	3	8,7,2	100
+gp	WalshFast	4	3	16,8,2	96
+gp	WalshFast	4	3	16,8,3	33
+gp	WalshFast	4	3	16,15,2	0
+gp	WalshFast	4	3	32,16,3	0
+					
+gp	WalshFast	4	4	8,4,2	100
+gp	WalshFast	4	4	8,4,3	100
+gp	WalshFast	4	4	8,5,2	100
+gp	WalshFast	4	4	8,7,2	100
+gp	WalshFast	4	4	16,8,2	96
+gp	WalshFast	4	4	16,8,3	20
+gp	WalshFast	4	4	16,15,2	0
+gp	WalshFast	4	4	32,16,3	0
