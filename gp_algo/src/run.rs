@@ -11,7 +11,7 @@ use oarray::FitnessFunction;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct RunParameters {
-    pub n : usize,
+    pub ngrande : usize,
     pub k : usize, 
     pub t : u32,
     pub pop_size : usize,
@@ -38,7 +38,7 @@ pub(crate) fn run(p : &RunParameters, show_progress: bool) -> (bool, bool) {
     let population: Vec<GPOArray<_>> = (0..p.pop_size)
         .map(|_| {
             GPOArray::new_rand(
-                p.n,
+                p.ngrande,
                 p.k,
                 p.t,
                 p.max_depth,

@@ -51,7 +51,7 @@ impl Iterator for BinaryStringIterator {
 
 impl<R: Rng + Send> GPOArray<R> {
     pub fn new_rand(
-        n: usize,
+        ngrande: usize,
         k: usize,
         target_t: u32,
         max_depth: usize,
@@ -63,7 +63,8 @@ impl<R: Rng + Send> GPOArray<R> {
     ) -> Self {
         let mut trees = Vec::with_capacity(k);
         let mut tree_gen = TreeGen::perfect(rng, 1, max_depth);
-        let ngrande = 2usize.pow(n as u32);
+        //let ngrande = 2usize.pow(n as u32);
+        let n = (ngrande as f64).log2().ceil() as usize;
         let config = TreeFormulaConfig { n_variables: n };
         for _ in 0..k {
             trees.push(Individual::new(&mut tree_gen, &config));
