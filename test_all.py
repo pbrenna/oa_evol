@@ -30,7 +30,7 @@ with open("tests.csv") as f:
             exponent = 2
         if algo == "gp":
             folder = "gp_algo"
-            part1 = "--depth {}".format(depth) if depth!="" else ""
+            part1 = "--max-depth {}".format(depth) if depth!="" else ""
         makefile += """\nresults/{}:
 \tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../results/{}.tmp --threads $(threads)
 """.format(outfile, folder, N, k, t, fitness, exponent, part1, runs, outfile)
