@@ -1,8 +1,8 @@
 import csv
 
-makefile = "threads = 2"
 all = ""
 runs = 100
+makefile = ""
 with open("tests.csv") as f:
     csv_reader = csv.reader(f, delimiter='\t')
     line = 0
@@ -31,9 +31,18 @@ with open("tests.csv") as f:
         if algo == "gp":
             folder = "gp_algo"
             part1 = "--max-depth {}".format(depth) if depth!="" else ""
-        makefile += """\nresults/{}:
-\tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../results/{} --threads $(threads)
+        if algo == "ga_inc":
+            folder = "ga_inc"
+        makefile += """\n$(outdir)/{}: $(outdir)/
+\tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
 """.format(outfile, folder, N, k, t, fitness, exponent, part1, runs, outfile)
-        all+=" results/{}".format(outfile)
-makefile += "\nall:{}".format(all)
+        all+=" $(outdir)/{}".format(outfile)
+makefile = """threads = 2
+
+outdir = results/
+
+all: {} 
+
+$(outdir)/: 
+\tmkdir -p $(outdir)\n""".format(all) + makefile
 print(makefile)

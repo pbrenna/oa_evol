@@ -146,3 +146,43 @@ gp	WalshFast	4	4	16,8,2	96
 gp	WalshFast	4	4	16,8,3	20
 gp	WalshFast	4	4	16,15,2	0
 gp	WalshFast	4	4	32,16,3	0
+					
+ga_inc	DeltaFast			8,4,2
+ga_inc	DeltaFast			8,4,3
+ga_inc	DeltaFast			8,5,2
+ga_inc	DeltaFast			8,7,2
+ga_inc	DeltaFast			16,8,2
+ga_inc	DeltaFast			16,8,3
+ga_inc	DeltaFast			16,15,2
+				
+ga_inc	WalshFast	2		8,4,2
+ga_inc	WalshFast	2		8,4,3
+ga_inc	WalshFast	2		8,5,2
+ga_inc	WalshFast	2		8,7,2
+ga_inc	WalshFast	2		16,8,2
+ga_inc	WalshFast	2		16,8,3
+ga_inc	WalshFast	2		16,15,2
+				
+ga_inc	WalshFast	3		8,4,2
+ga_inc	WalshFast	3		8,4,3
+ga_inc	WalshFast	3		8,5,2
+ga_inc	WalshFast	3		8,7,2
+ga_inc	WalshFast	3		16,8,2
+ga_inc	WalshFast	3		16,8,3
+ga_inc	WalshFast	3		16,15,2
+				
+ga_inc	WalshFast	4		8,4,2
+ga_inc	WalshFast	4		8,4,3
+ga_inc	WalshFast	4		8,5,2
+ga_inc	WalshFast	4		8,7,2
+ga_inc	WalshFast	4		16,8,2
+ga_inc	WalshFast	4		16,8,3
+ga_inc	WalshFast	4		16,15,2
+				
+ga_inc	WalshFast	5		8,4,2
+ga_inc	WalshFast	5		8,4,3
+ga_inc	WalshFast	5		8,5,2
+ga_inc	WalshFast	5		8,7,2
+ga_inc	WalshFast	5		16,8,2
+ga_inc	WalshFast	5		16,8,3
+ga_inc	WalshFast	5		16,15,2
