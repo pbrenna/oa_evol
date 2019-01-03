@@ -32,11 +32,13 @@ with open("tests.csv") as f:
         outfile += ".{}runs.log".format(runs)
         if exponent == "":
             exponent = 2
-        if algo == "gp":
+        if algo in ["gp", "gp_inc"]:
             folder = "gp_algo"
             part1 = "--max-depth {}".format(depth) if depth != "" else ""
         if algo == "ga_inc":
             folder = "ga_inc"
+        if algo == "gp_inc":
+            folder = "gp_inc"
         makefile += """\n$(outdir)/{}: $(outdir)/
 \tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
 """.format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile)
