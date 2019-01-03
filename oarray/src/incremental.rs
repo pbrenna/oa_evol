@@ -18,6 +18,23 @@ impl OArray {
         }
         OArray::new(ngrande, target_t as usize, target_t, d, fitness_f)
     }
+    /**
+     * self: a valid OA except for the last column 
+     * */
+    pub fn delta_incremental_faster(&self) -> f64 {
+        let mut comb = t_combinations::Combinations::new(self.k-1, self.target_t - 1);
+        let out: f64 = comb
+            .stream_iter()
+            .map(|igrande| {
+                let mut my_igrande = Vec::new();
+                my_igrande.push(self.k-1);
+                my_igrande.extend_from_slice(igrande);
+                self.delta_grande_faster(&my_igrande, 2)
+                })
+            .cloned()
+            .sum();
+        -out
+    }
 
     pub fn walsh_incremental_faster(&self, exp: u32, last: &[bool]) -> f64 {
         let cols: Vec<&[bool]> = self.iter_cols().collect();
@@ -110,6 +127,38 @@ fn test_incremental() {
             fitwfa,
             fitwfu,
             fitwfufa
+        );
+    }
+}
+
+
+#[test]
+fn test_delta_incremental() {
+    use rand::thread_rng;
+    use rand::Rng;
+    use std::f64;
+    use FitnessFunction::*;
+    let mut r = thread_rng();
+    for _ in 0..10000 {
+        let partial = OArray::generate_partial(16, 4, DeltaFast);
+        let mut last: Vec<bool> = [true, true, false]
+            .iter()
+            .cloned()
+            .cycle()
+            .take(partial.ngrande)
+            .collect();
+        r.shuffle(&mut last);
+        let mut oa = partial.clone();
+        oa.d.append(&mut last.clone());
+        oa.k += 1;
+        let fit_delta = oa.fitness();
+
+        let fit_delta_partial = oa.delta_incremental_faster();
+        let error = f64::EPSILON;
+        assert!((fit_delta - fit_delta_partial).abs() < error,
+            "{}, {}",
+            fit_delta,
+            fit_delta_partial,
         );
     }
 }

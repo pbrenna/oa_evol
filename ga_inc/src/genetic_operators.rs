@@ -93,6 +93,7 @@ impl<'a> Unit for IncGAOArray<'a> {
         match self.partial.fitness_f {
             Walsh(x) => self.partial.walsh_incremental(x, &self.last_col),
             WalshFaster(x) => self.partial.walsh_incremental_faster(x, &self.last_col),
+            DeltaFast => self.complete_oa().delta_incremental_faster(),
             _ => self.complete_oa().fitness(),
         }
     }

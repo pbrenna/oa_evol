@@ -158,9 +158,7 @@ fn main() {
 
     info!(
         "Looking for OA[N: {}, k: {}, s: 2, t: {}]",
-        params.ngrande,
-        params.k,
-        params.t
+        params.ngrande, params.k, params.t
     );
     debug!("{:#?}", params);
 
@@ -171,7 +169,7 @@ fn main() {
         .map(|thr| {
             thread::spawn(move || {
                 let mut my_finds = 0usize;
-                let mut my_linear_finds= 0usize;
+                let mut my_linear_finds = 0usize;
                 let my_runs = if thr < resto {
                     runs_per_thread + 1
                 } else {

@@ -80,6 +80,7 @@ impl<'a, R: Rng + Send> IncGPOArray<'a, R> {
         match self.partial.fitness_f {
             Walsh(x) => self.partial.walsh_incremental(x, last_col),
             WalshFaster(x) => self.partial.walsh_incremental_faster(x, last_col),
+            DeltaFast => self.to_oarray().delta_incremental_faster(),
             _ => self.to_oarray().fitness(),
         }
     }

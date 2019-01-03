@@ -2,7 +2,6 @@ use oarray::OArray;
 use streaming_iterator::StreamingIterator;
 use t_combinations::{combinations_descent, Combinations};
 
-
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum FitnessFunction {
     Delta,
@@ -38,7 +37,7 @@ impl OArray {
             Walsh(exponent) => self.walsh_fitness(exponent),
             WalshFaster(exponent) => self.walsh_faster(exponent)
         };
-        assert!(ret <= 0.0, "overflow");
+        debug_assert!(ret <= 0.0, "overflow");
         ret
     }
 
@@ -73,7 +72,7 @@ impl OArray {
             .powf(1.0 / p)
     }
 
-    fn delta_grande_faster(&self, igrande: &[usize], p: u32) -> f64 {
+    pub(crate) fn delta_grande_faster(&self, igrande: &[usize], p: u32) -> f64 {
         let t_num = igrande.len();
         let num_representable_strings = 2usize.pow(t_num as u32);
         let lambda = self.ngrande / num_representable_strings;
