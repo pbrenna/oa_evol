@@ -21,6 +21,7 @@ with open("tests.csv") as f:
         exponent = row[2]
         depth = row[3]
         parts = row[4].split(",")
+        parts = [p.strip() for p in parts] 
         N = parts[0]
         k = parts[1]
         t = parts[2]
