@@ -4,6 +4,7 @@ use std::f64;
 
 //mod epoch;
 use epoch::TournamentEpoch;
+use spiril::epoch::DefaultEpoch;
 
 use genetic_operators::IncGAOArray;
 use oarray::{FitnessFunction, OArray};
@@ -25,7 +26,7 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     assert!(ngrande % (2usize.pow(p.t)) == 0, "2^t non divide N");
     let mut partial = OArray::generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
-    let epoch = TournamentEpoch::new();
+    let epoch = DefaultEpoch::default();
     while k_current < p.k {
         let num_epochs = p.epochs * (k_current + 1 - p.t as usize);
         let best;

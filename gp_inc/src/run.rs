@@ -6,6 +6,7 @@ use std::f64;
 
 //mod epoch;
 use epoch::TournamentEpoch;
+use spiril::epoch::DefaultEpoch;
 
 use gpoarray::IncGPOArray;
 use oarray::{FitnessFunction, OArray};
@@ -29,8 +30,8 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     assert!(ngrande % (2usize.pow(p.t)) == 0, "2^t non divide N");
     let mut partial = OArray::generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
-    let epoch = TournamentEpoch::new();
-    //let epoch = DefaultEpoch::default();
+    //let epoch = TournamentEpoch::new();
+    let epoch = DefaultEpoch::default();
     let crossover = Crossover::hard_prune(p.max_depth);
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
     let mutation = Mutation::uniform();
