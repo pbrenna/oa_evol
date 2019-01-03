@@ -3,6 +3,10 @@ import csv
 all = ""
 runs = 100
 makefile = ""
+fitness_map = {
+    'delta': 'DeltaFast',
+    'walsh': 'WalshFast'
+}
 with open("tests.csv") as f:
     csv_reader = csv.reader(f, delimiter='\t')
     line = 0
@@ -11,7 +15,7 @@ with open("tests.csv") as f:
         if row[0] == "":
             continue
         algo = row[0]
-        part1 =""
+        part1 = ""
         folder = "ga_algo"
         fitness = row[1]
         exponent = row[2]
@@ -30,13 +34,13 @@ with open("tests.csv") as f:
             exponent = 2
         if algo == "gp":
             folder = "gp_algo"
-            part1 = "--max-depth {}".format(depth) if depth!="" else ""
+            part1 = "--max-depth {}".format(depth) if depth != "" else ""
         if algo == "ga_inc":
             folder = "ga_inc"
         makefile += """\n$(outdir)/{}: $(outdir)/
 \tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
-""".format(outfile, folder, N, k, t, fitness, exponent, part1, runs, outfile)
-        all+=" $(outdir)/{}".format(outfile)
+""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile)
+        all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2
 
 outdir = results/
