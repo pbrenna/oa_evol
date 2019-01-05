@@ -40,8 +40,8 @@ with open("tests.csv") as f:
             folder = "ga_inc"
         if algo == "gp_inc":
             folder = "gp_inc"
-        makefile += """\n$(outdir)/{}: $(outdir)/
-\tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
+        makefile += """\n$(outdir)/{}:
+\tmkdir -p $(outdir) && cd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
 """.format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile)
         all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2
@@ -49,7 +49,5 @@ makefile = """threads = 2
 outdir = results/
 
 all: {} 
-
-$(outdir)/: 
-\tmkdir -p $(outdir)\n""".format(all) + makefile
+""".format(all) + makefile
 print(makefile)
