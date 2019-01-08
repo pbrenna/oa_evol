@@ -5,7 +5,9 @@ runs = 100
 makefile = ""
 fitness_map = {
     'delta': 'DeltaFast',
-    'walsh': 'WalshFast'
+    'walsh': 'WalshFast',
+    'delta_bal' : 'DeltaFast',
+    'walsh_bal' : 'WalshFast'
 }
 with open("tests.csv") as f:
     csv_reader = csv.reader(f, delimiter='\t')

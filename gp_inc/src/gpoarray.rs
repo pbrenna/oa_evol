@@ -77,12 +77,21 @@ impl<'a, R: Rng + Send> IncGPOArray<'a, R> {
         self.lazy_fitness = None;
     }
     fn oa_fitness(&self, last_col: &[bool]) -> f64 {
-        match self.partial.fitness_f {
+        let oa_fit = match self.partial.fitness_f {
             Walsh(x) => self.partial.walsh_incremental(x, last_col),
             WalshFaster(x) => self.partial.walsh_incremental_faster(x, last_col),
             DeltaFast => self.to_oarray().delta_incremental_faster(),
             _ => self.to_oarray().fitness(),
+        };
+        let mut tot = 0i64;
+        for cell in last_col {
+            if *cell {
+                tot += 1;
+            } else {
+                tot -= 1;
+            }
         }
+        oa_fit - (tot.abs() as f64)
     }
 }
 
