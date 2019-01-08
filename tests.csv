@@ -258,3 +258,70 @@ gp_inc	delta		5	16, 15, 2
 gp_inc	delta		5	32, 16, 3
 gp_inc	delta		5	64, 32, 3
 gp_inc	delta		5	64, 63, 2
+				
+gp_inc	delta_bal		3	8, 4, 2
+gp_inc	delta_bal		3	8, 4, 3
+gp_inc	delta_bal		3	8, 5, 2
+gp_inc	delta_bal		3	8, 7, 2
+gp_inc	delta_bal		3	16, 8, 2
+gp_inc	delta_bal		3	16, 8, 3
+gp_inc	delta_bal		3	16, 15, 2
+gp_inc	delta_bal		3	32, 16, 3
+				
+gp_inc	walsh_bal	2	3	8, 4, 2
+gp_inc	walsh_bal	2	3	8, 4, 3
+gp_inc	walsh_bal	2	3	8, 5, 2
+gp_inc	walsh_bal	2	3	8, 7, 2
+gp_inc	walsh_bal	2	3	16, 8, 2
+gp_inc	walsh_bal	2	3	16, 8, 3
+gp_inc	walsh_bal	2	3	16, 15, 2
+gp_inc	walsh_bal	2	3	32, 16, 3
+gp_inc	walsh_bal	2	3	64, 32, 3
+gp_inc	walsh_bal	2	3	64, 63, 2
+				
+gp_inc	walsh_bal	2	4	8, 4, 2
+gp_inc	walsh_bal	2	4	8, 4, 3
+gp_inc	walsh_bal	2	4	8, 5, 2
+gp_inc	walsh_bal	2	4	8, 7, 2
+gp_inc	walsh_bal	2	4	16, 8, 2
+gp_inc	walsh_bal	2	4	16, 8, 3
+gp_inc	walsh_bal	2	4	16, 15, 2
+gp_inc	walsh_bal	2	4	32, 16, 3
+gp_inc	walsh_bal	2	4	64, 32, 3
+gp_inc	walsh_bal	2	4	64, 63, 2
+				
+gp_inc	walsh_bal	2	5	8, 4, 2
+gp_inc	walsh_bal	2	5	8, 4, 3
+gp_inc	walsh_bal	2	5	8, 5, 2
+gp_inc	walsh_bal	2	5	8, 7, 2
+gp_inc	walsh_bal	2	5	16, 8, 2
+gp_inc	walsh_bal	2	5	16, 8, 3
+gp_inc	walsh_bal	2	5	16, 15, 2
+gp_inc	walsh_bal	2	5	32, 16, 3
+gp_inc	walsh_bal	2	5	64, 32, 3
+gp_inc	walsh_bal	2	5	64, 63, 2
+				
+gp_inc	delta_bal		3	64, 32, 3
+gp_inc	delta_bal		3	64, 63, 2
+				
+gp_inc	delta_bal		4	8, 4, 2
+gp_inc	delta_bal		4	8, 4, 3
+gp_inc	delta_bal		4	8, 5, 2
+gp_inc	delta_bal		4	8, 7, 2
+gp_inc	delta_bal		4	16, 8, 2
+gp_inc	delta_bal		4	16, 8, 3
+gp_inc	delta_bal		4	16, 15, 2
+gp_inc	delta_bal		4	32, 16, 3
+gp_inc	delta_bal		4	64, 32, 3
+gp_inc	delta_bal		4	64, 63, 2
+				
+gp_inc	delta_bal		5	8, 4, 2
+gp_inc	delta_bal		5	8, 4, 3
+gp_inc	delta_bal		5	8, 5, 2
+gp_inc	delta_bal		5	8, 7, 2
+gp_inc	delta_bal		5	16, 8, 2
+gp_inc	delta_bal		5	16, 8, 3
+gp_inc	delta_bal		5	16, 15, 2
+gp_inc	delta_bal		5	32, 16, 3
+gp_inc	delta_bal		5	64, 32, 3
+gp_inc	delta_bal		5	64, 63, 2
