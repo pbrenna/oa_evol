@@ -28,7 +28,7 @@ pub(crate) fn run(p : &RunParameters, show_progress: bool) -> (bool, bool) {
 
     let crossover = Crossover::hard_prune(p.max_depth);
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
-    let mutation = Mutation::uniform();
+    let mutation = Mutation::uniform_prune(p.max_depth);
     let epoch = DefaultEpoch::new(0.2, 0.8);
 
     //let mut rng = OsRng::new().unwrap();
