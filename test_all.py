@@ -42,7 +42,7 @@ with open("tests.csv") as f:
         makefile += """\n$(outdir)/{}:
 \t@mkdir -p $(outdir)
 \tcargo run --bin {} --release {} {} {} --fitness {} --fitness-exp {} {} --runs $(runs) --log $@ --threads $(threads)
-\t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d" >> $@
+\t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d%n" >> $@
 """.format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, outfile, outfile, outfile)
         all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2
