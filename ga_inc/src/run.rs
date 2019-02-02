@@ -3,7 +3,7 @@ use spiril::{population::Population, unit::Unit};
 use std::f64;
 
 //mod epoch;
-use epoch::TournamentEpoch;
+//use epoch::TournamentEpoch;
 use spiril::epoch::DefaultEpoch;
 
 use genetic_operators::IncGAOArray;

@@ -245,7 +245,7 @@ mod test {
             assert!((a - b).abs() < error);
         }
     }
-    mod bench {
+    /* mod bench {
         use rand::thread_rng;
         use std::f64::EPSILON;
         use test::Bencher;
@@ -391,6 +391,6 @@ mod test {
                 let b = oa.fitness();
                 test::black_box(b);
             })
-        }
-    }
+        } 
+    }*/
 }

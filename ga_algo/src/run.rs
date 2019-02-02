@@ -2,7 +2,7 @@ use spiril::{population::Population, unit::Unit, epoch::DefaultEpoch};
 use std::f64;
 
 //mod epoch;
-use epoch::TournamentEpoch;
+//use epoch::TournamentEpoch;
 
 use genetic_operators::GAOArray;
 use oarray::{OArray, FitnessFunction};

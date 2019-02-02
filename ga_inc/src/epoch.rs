@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use rand::Rng;
 use spiril::{epoch::Epoch, population::LazyUnit, unit::Unit};
 use std::cmp::Ordering;

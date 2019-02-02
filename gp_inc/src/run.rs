@@ -5,7 +5,7 @@ use rand::OsRng;
 use std::f64;
 
 //mod epoch;
-use epoch::TournamentEpoch;
+//use epoch::TournamentEpoch;
 use spiril::epoch::DefaultEpoch;
 
 use gpoarray::IncGPOArray;
@@ -34,7 +34,8 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     let epoch = DefaultEpoch::default();
     let crossover = Crossover::hard_prune(p.max_depth);
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
-    let mutation = Mutation::uniform();
+    //let mutation = Mutation::uniform_prune(p.max_depth);
+    let mutation= Mutation::uniform();
     let rng = OsRng::new().unwrap();
     let mut formulas = Vec::new();
     while k_current < p.k {
