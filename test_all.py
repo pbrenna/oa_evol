@@ -43,12 +43,14 @@ with open("tests.csv") as f:
         if algo == "gp_inc":
             folder = "gp_inc"
         makefile += """\n$(outdir)/{}:
-\tmkdir -p $(outdir) && cd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
-""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile)
+\t@mkdir -p $(outdir)
+\tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
+\t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d" >> ./$(outdir)/{}
+""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile, outfile, outfile)
         all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2
 
-outdir = results/
+outdir = results
 
 all: {} 
 """.format(all) + makefile
