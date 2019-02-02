@@ -1,7 +1,6 @@
 import csv
 
 all = ""
-runs = 100
 makefile = ""
 fitness_map = {
     'delta': 'DeltaFast',
@@ -32,7 +31,7 @@ with open("tests.csv") as f:
             outfile += ".exp{}".format(exponent)
         if depth != "":
             outfile += ".depth{}".format(depth)
-        outfile += ".{}runs.log".format(runs)
+        outfile += ".log"
         if exponent == "":
             exponent = 2
         if algo in ["gp", "gp_inc"]:
@@ -44,12 +43,12 @@ with open("tests.csv") as f:
             folder = "gp_inc"
         makefile += """\n$(outdir)/{}:
 \t@mkdir -p $(outdir)
-\tcargo run --bin {} --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log $@ --threads $(threads)
+\tcargo run --bin {} --release {} {} {} --fitness {} --fitness-exp {} {} --runs $(runs) --log $@ --threads $(threads)
 \t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d" >> $@
-""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile, outfile, outfile)
+""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, outfile, outfile, outfile)
         all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2
-
+runs = 50
 outdir = results
 
 all: {} 
