@@ -44,8 +44,8 @@ with open("tests.csv") as f:
             folder = "gp_inc"
         makefile += """\n$(outdir)/{}:
 \t@mkdir -p $(outdir)
-\tcd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
-\t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d" >> ./$(outdir)/{}
+\tcargo run --bin {} --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log $@ --threads $(threads)
+\t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d" >> $@
 """.format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile, outfile, outfile)
         all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2

@@ -1,7 +1,6 @@
 extern crate oarray;
 use oarray::binary_strings;
 use std::env;
-use std::io;
 
 fn main() {
     let len: usize = env::args().nth(1).unwrap().parse().unwrap();
