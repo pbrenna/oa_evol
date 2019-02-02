@@ -1,7 +1,7 @@
 
 use evco::gp::*;
 use pbr::ProgressBar;
-use rand::{StdRng, FromEntropy};
+use rand::OsRng;
 use spiril::population::Population;
 use spiril::unit::Unit;
 use std::f64;
@@ -34,7 +34,7 @@ pub(crate) fn run(p : &RunParameters, show_progress: bool) -> (bool, bool) {
     //let mut rng = OsRng::new().unwrap();
     //let tree_gen = TreeGen::full(&mut rng, 1, 4);
 
-    let rng = StdRng::from_entropy();
+    let rng = OsRng::new().unwrap();
     let population: Vec<GPOArray<_>> = (0..p.pop_size)
         .map(|_| {
             GPOArray::new_rand(

@@ -1,7 +1,7 @@
 use spiril::{population::Population, unit::Unit};
 //use std::cmp;
 use evco::gp::*;
-use rand::{StdRng, FromEntropy};
+use rand::OsRng;
 use std::f64;
 
 //mod epoch;
@@ -36,7 +36,7 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
     //let mutation = Mutation::uniform_prune(p.max_depth);
     let mutation= Mutation::uniform();
-    let rng = StdRng::from_entropy();
+    let rng = OsRng::new().unwrap();
     let mut formulas = Vec::new();
     while k_current < p.k {
         let num_epochs = p.epochs * (k_current + 1 - p.t as usize);
