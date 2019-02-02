@@ -49,17 +49,17 @@ fn main() {
             Arg::with_name("epochs")
                 .help("Number of epochs per run")
                 .long("epochs")
-                .default_value("500"),
+                .default_value("50"),
         ).arg(
             Arg::with_name("pop-size")
                 .long("pop-size")
                 .help("The size of the population")
-                .default_value("50"),
+                .default_value("500"),
         ).arg(
             Arg::with_name("mutation-prob")
                 .long("mutation-prob")
                 .help("The probability that the offspring is mutated")
-                .default_value("0.2"),
+                .default_value("0.5"),
         ).arg(
             Arg::with_name("runs")
                 .long("runs")
