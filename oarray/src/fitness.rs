@@ -6,8 +6,9 @@ use t_combinations::{combinations_descent, Combinations};
 pub enum FitnessFunction {
     Delta,
     DeltaFast,
-    Walsh(u32), //exponent
+    Walsh(u32),       //exponent
     WalshFaster(u32), //exponent
+    WalshRec(u32)
 }
 pub use self::FitnessFunction::*;
 
@@ -35,8 +36,10 @@ impl OArray {
             Delta => self.delta_fitness(),
             DeltaFast => self.delta_fitness_fast(),
             Walsh(exponent) => self.walsh_fitness(exponent),
-            WalshFaster(exponent) => self.walsh_faster(exponent)
+            WalshFaster(exponent) => self.walsh_faster(exponent),
+            WalshRec(exponent) => self.walsh_fitness_rec(exponent as f64)
         };
+        //dbg!(ret);
         debug_assert!(ret <= 0.0, "overflow");
         ret
     }
@@ -87,6 +90,7 @@ impl OArray {
         (tot as f64).powf(1.0 / f64::from(p))
     }
     /// Walsh
+    #[inline(never)]
     fn walsh_fitness(&self, exp: u32) -> f64 {
         let t = self.target_t;
         let mut grand_tot = 0;
@@ -106,6 +110,7 @@ impl OArray {
         }
         -grand_tot as f64
     }
+    #[inline(never)]
     fn walsh_faster(&self, exp: u32) -> f64 {
         let cols: Vec<&[bool]> = self.iter_cols().collect();
         let mut grand_tot = 0;
@@ -113,7 +118,6 @@ impl OArray {
         combinations_descent(
             self.k,
             self.target_t as usize,
-            0,
             0,
             &tmp0,
             &mut |i, tmp| {
@@ -129,6 +133,45 @@ impl OArray {
         );
         -grand_tot as f64
     }
+    fn walsh_fitness_rec(&self, p: f64) -> f64 {
+        let k = self.k;
+        -recurse_comb(k, self.target_t as usize, 1, vec![false; self.ngrande], self, p)
+    }
+}
+fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){
+    let mut total = 0i64;
+    let mut new_column = vec![false;agrande.ngrande];
+    for j in 1..=agrande.ngrande {
+        new_column[j-1] = column[j-1] ^ agrande.iter_cols().nth(i-1).unwrap()[j-1];
+        if new_column[j-1] == true {
+            total = total + 1;
+        } else {
+            total = total - 1;
+        }
+//        dbg!(total);
+    }
+    (new_column, (total as f64).abs().powf(p))
+}
+
+fn recurse_comb(
+    k: usize,
+    comb_len: usize,
+    base: usize,
+    column: Vec<bool>,
+    agrande: &OArray,
+    p: f64,
+) -> f64 {
+    let mut total = 0.0;
+    if comb_len < 1 {
+        return 0.0;
+    }
+    for i in base..=k {
+        let (new_column, partial) = walsh_step(agrande,i,column.clone(), p);
+        total = total + partial;
+        let rec = recurse_comb(k, comb_len-1, i+1, new_column, agrande, p);
+        total = total + rec;
+    }
+    total
 }
 
 #[allow(unused_macros)]
@@ -188,6 +231,166 @@ mod test {
         for _ in 0..1000 {
             let rand = OArray::new_random_balanced(8, 7, 3, &mut rng, DeltaFast);
             assert!((rand.walsh_faster(2) - rand.walsh_fitness(2)).abs() < error);
+        }
+    }
+    #[test]
+    fn test_paper_impl() {
+        let mut rng = thread_rng();
+        let error = EPSILON;
+        for _ in 0..1000 {
+            let rand = OArray::new_random_balanced(16, 15, 3, &mut rng, DeltaFast);
+            let a = rand.walsh_fitness_rec(2.0);
+            let b = rand.walsh_fitness(2);
+            dbg!([a,b]);
+            assert!((a - b).abs() < error);
+        }
+    }
+    mod bench {
+        use rand::thread_rng;
+        use std::f64::EPSILON;
+        use test::Bencher;
+        use FitnessFunction::*;
+        use OArray;
+
+        #[bench]
+        fn bench_walsh2(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 2;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_walsh3(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 3;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_walsh4(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 4;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_walsh5(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 5;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_walsh6(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 6;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_walsh7(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 7;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_walsh8(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 8;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, Walsh(2));
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast2(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 2;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast3(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 3;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast4(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 4;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast5(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 5;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast6(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 6;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast7(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 7;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
+        }
+        #[bench]
+        fn bench_delta_fast8(b: &mut Bencher) {
+            let mut rng = thread_rng();
+            let t = 8;
+            let oa = OArray::new_random_balanced(256, 20, t, &mut rng, DeltaFast);
+            b.iter(|| {
+                let b = oa.fitness();
+                test::black_box(b);
+            })
         }
     }
 }

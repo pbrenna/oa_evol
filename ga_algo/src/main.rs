@@ -114,6 +114,7 @@ fn main() {
         "DeltaFast" => oarray::FitnessFunction::DeltaFast,
         "Walsh" => oarray::FitnessFunction::Walsh(get_arg!(matches, "fitness-exp", u32)),
         "WalshFast" => oarray::FitnessFunction::WalshFaster(get_arg!(matches, "fitness-exp", u32)),
+        "WalshRec" => oarray::FitnessFunction::WalshRec(get_arg!(matches, "fitness-exp", u32)),
         _ => panic!("Invalid function name"),
     };
     let params = run::RunParameters {

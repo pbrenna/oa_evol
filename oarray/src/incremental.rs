@@ -49,7 +49,6 @@ impl OArray {
             self.k,
             self.target_t as usize - 1,
             0,
-            0,
             &tmp0,
             &mut |i, tmp| {
                 let tmp1: Vec<bool> = cols[i].iter().zip(tmp.iter()).map(|(a, b)| a ^ b).collect();

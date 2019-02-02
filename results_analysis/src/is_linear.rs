@@ -6,12 +6,23 @@ use std::io::{self, Read};
 fn main() -> io::Result<()>{
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer)?;
-    let oa = OArray::from(buffer.as_str());
+    let mut oa = OArray::from(buffer.as_str());
     let linear = oa.check_linear();
     if linear {
         println!("Linear");
     } else {
         println!("Not linear");
     }
+    use oarray::FitnessFunction::*;
+    oa.fitness_f = WalshRec(2);
+    println!("{:?}: {}", oa.fitness_f, oa.fitness());
+    oa.fitness_f = DeltaFast;
+    println!("{:?}: {}", oa.fitness_f, oa.fitness());
+    oa.fitness_f = WalshFaster(2);
+    println!("{:?}: {}", oa.fitness_f, oa.fitness());
+    oa.fitness_f = Walsh(2);
+    println!("{:?}: {}", oa.fitness_f, oa.fitness());
+    oa.fitness_f = Delta;
+    println!("{:?}: {}", oa.fitness_f, oa.fitness());
     Ok(())
 }

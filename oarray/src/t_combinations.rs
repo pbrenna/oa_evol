@@ -82,7 +82,6 @@ pub fn combinations_descent<ComputeFn, R>(
     n: usize,
     t: usize,
     base: usize,
-    depth: usize,
     tmp: &R,
     fun: &mut ComputeFn,
 ) where
@@ -93,12 +92,9 @@ pub fn combinations_descent<ComputeFn, R>(
         return;
     }
     for i in base..n {
-        for _ in 0..depth {
-            //print!(" ");
-        }
         //print!("{}:\t", i);
         let new_tmp = fun(i, tmp);
-        combinations_descent(n, t - 1, i + 1, depth + 1, &new_tmp, fun);
+        combinations_descent(n, t - 1, i + 1, &new_tmp, fun);
     }
 }
 
