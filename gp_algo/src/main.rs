@@ -51,7 +51,7 @@ fn main() {
             Arg::with_name("epochs")
                 .help("Number of epochs per run")
                 .long("epochs")
-                .default_value("500"),
+                .default_value("1000"),
         )
         .arg(
             Arg::with_name("pop-size")
