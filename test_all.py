@@ -27,7 +27,7 @@ with open("tests.csv") as f:
         N = parts[0]
         k = parts[1]
         t = parts[2]
-        outfile = "{:03d}.{}.{}.{}.{}".format(line, algo, N, k, t)
+        outfile = "{:03d}.{}.{}.{}.{}.{}".format(line, algo, fitness, N, k, t)
         if exponent != "":
             outfile += ".exp{}".format(exponent)
         if depth != "":
