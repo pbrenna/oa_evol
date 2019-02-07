@@ -1,6 +1,6 @@
 [package]
 authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
-name = "ga"
+name = "ga_algo"
 version = "0.1.0"
 
 [dependencies]

@@ -1,13 +1,10 @@
 import csv
 
 all = ""
-runs = 100
 makefile = ""
 fitness_map = {
     'delta': 'DeltaFast',
     'walsh': 'WalshFast',
-    'delta_bal' : 'DeltaFast',
-    'walsh_bal' : 'WalshFast'
 }
 with open("tests.csv") as f:
     csv_reader = csv.reader(f, delimiter='\t')
@@ -27,12 +24,12 @@ with open("tests.csv") as f:
         N = parts[0]
         k = parts[1]
         t = parts[2]
-        outfile = "{:03d}.{}.{}.{}.{}".format(line, algo, N, k, t)
+        outfile = "{:03d}.{}.{}.{}.{}.{}".format(line, algo, fitness, N, k, t)
         if exponent != "":
             outfile += ".exp{}".format(exponent)
         if depth != "":
             outfile += ".depth{}".format(depth)
-        outfile += ".{}runs.log".format(runs)
+        outfile += ".log"
         if exponent == "":
             exponent = 2
         if algo in ["gp", "gp_inc"]:
@@ -43,12 +40,14 @@ with open("tests.csv") as f:
         if algo == "gp_inc":
             folder = "gp_inc"
         makefile += """\n$(outdir)/{}:
-\tmkdir -p $(outdir) && cd {} && cargo run --release {} {} {} --fitness {} --fitness-exp {} {} --runs {} --log ../$(outdir)/{} --threads $(threads)
-""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, runs, outfile)
+\t@mkdir -p $(outdir)
+\tcargo run --bin {} --release {} {} {} --fitness {} --fitness-exp {} {} --runs $(runs) --log $@ --threads $(threads)
+\t@git --no-pager log -1 --pretty=format:"%nCommit: %h %d%n" >> $@
+""".format(outfile, folder, N, k, t, fitness_map[fitness], exponent, part1, outfile, outfile, outfile)
         all += " $(outdir)/{}".format(outfile)
 makefile = """threads = 2
-
-outdir = results/
+runs = 50
+outdir = results
 
 all: {} 
 """.format(all) + makefile

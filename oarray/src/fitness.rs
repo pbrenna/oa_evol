@@ -138,7 +138,7 @@ impl OArray {
         -recurse_comb(k, self.target_t as usize, 1, vec![false; self.ngrande], self, p)
     }
 }
-fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){
+pub(crate) fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){
     let mut total = 0i64;
     let mut new_column = vec![false;agrande.ngrande];
     for j in 1..=agrande.ngrande {
@@ -153,7 +153,7 @@ fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){
     (new_column, (total as f64).abs().powf(p))
 }
 
-fn recurse_comb(
+pub(crate) fn recurse_comb(
     k: usize,
     comb_len: usize,
     base: usize,
@@ -241,7 +241,6 @@ mod test {
             let rand = OArray::new_random_balanced(16, 15, 3, &mut rng, DeltaFast);
             let a = rand.walsh_fitness_rec(2.0);
             let b = rand.walsh_fitness(2);
-            dbg!([a,b]);
             assert!((a - b).abs() < error);
         }
     }
