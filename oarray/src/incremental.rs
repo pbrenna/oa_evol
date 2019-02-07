@@ -89,6 +89,15 @@ impl OArray {
         }
         -grand_tot as f64
     }
+    fn walsh_incremental_rec(&self, p: f64, last: &[bool]) -> f64 {
+        use fitness::{walsh_step,recurse_comb};
+        let k = self.k + 1;
+        let mut concat= self.clone();
+        concat.d.extend(last);
+        concat.k += 1;
+        let (initial_col,partial) = walsh_step(&concat, k, vec![false; self.ngrande], p);
+        -(partial+recurse_comb(k-1, self.target_t as usize-1, 1, initial_col, &concat, p))
+    }
 }
 
 #[test]
@@ -158,6 +167,42 @@ fn test_delta_incremental() {
             "{}, {}",
             fit_delta,
             fit_delta_partial,
+        );
+    }
+}
+
+#[test]
+fn test_paper_impl2() {
+
+    use rand::thread_rng;
+    use rand::Rng;
+    use std::f64;
+    use FitnessFunction::*;
+    let mut r = thread_rng();
+    for _ in 0..10000 {
+        let partial = OArray::generate_partial(16, 4, DeltaFast);
+        let mut last: Vec<bool> = [true, false]
+            .iter()
+            .cloned()
+            .cycle()
+            .take(partial.ngrande)
+            .collect();
+        r.shuffle(&mut last);
+        let mut oa = partial.clone();
+        oa.d.append(&mut last.clone());
+        oa.k += 1;
+        oa.fitness_f = Walsh(2);
+        let fit_walsh_fast_rec = partial.walsh_incremental_faster(2,&last);
+        let fit_walsh_partial_rec = partial.walsh_incremental_rec(2.0,&last);
+        let fit_walsh = oa.fitness();
+        let error = f64::EPSILON;
+        dbg!(fit_walsh);
+        dbg!(fit_walsh_partial_rec);
+        dbg!(fit_walsh_fast_rec);
+        assert!((fit_walsh - fit_walsh_partial_rec).abs() < error,
+            "{}, {}",
+            fit_walsh,
+            fit_walsh_partial_rec,
         );
     }
 }
