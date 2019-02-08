@@ -98,13 +98,13 @@ impl Tree for TreeFormula {
 impl Display for TreeFormula {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         match self {
-            Xor(ref a, ref b) => write!(f, "({} ⨁  {})", a, b),
-            And(ref a, ref b) => write!(f, "({} ∧ {})", a, b),
-            Or(ref a, ref b) => write!(f, "({} ∨ {})", a, b),
-            Not(ref a) => write!(f, "¬ ({})", a),
-            If(ref cond, ref a, ref b) => write!(f, "if ({}, then {}, else {})", cond, a, b),
+            Xor(ref a, ref b) => write!(f, "\\left({} \\oplus {}\\right)", a, b),
+            And(ref a, ref b) => write!(f, "\\left({} \\land {}\\right)", a, b),
+            Or(ref a, ref b) => write!(f, "\\left({} \\lor {}\\right)", a, b),
+            Not(ref a) => write!(f, "\\neg {}", a),
+            If(ref cond, ref a, ref b) => write!(f, "\\begin{{cases}}{} & \\text{{if }} {} \\\\ {} & \\text{{otherwise}}\\end{{cases}}", a, cond, b),
             //Val(t) => write!(f, "{}", t.to_usize().unwrap()),
-            Var(i) => write!(f, "x{}", subscript(*i))
+            Var(i) => write!(f, "x_{}", i)
         }
     }
 }
