@@ -278,13 +278,22 @@ ga_hill	luck			16, 8, 3
 ga_inc	luck			32, 16, 3
 gp_inc	luck		3	32, 16, 3
 				
-gp_inc	luck	2	3	8, 4, 2
-gp_inc	luck	2	3	8, 4, 3
-gp_inc	luck	2	3	8, 5, 2
-gp_inc	luck	2	3	8, 7, 2
-gp_inc	luck	2	3	16, 8, 2
-gp_inc	luck	2	3	16, 8, 3
-gp_inc	luck	2	3	16, 15, 2
-gp_inc	luck	2	3	32, 16, 3
-gp_inc	luck	2	3	64, 32, 3
-gp_inc	luck	2	3	64, 63, 2
+gp_inc	luck		3	8, 4, 2
+gp_inc	luck		3	8, 4, 3
+gp_inc	luck		3	8, 5, 2
+gp_inc	luck		3	8, 7, 2
+gp_inc	luck		3	16, 8, 2
+gp_inc	luck		3	16, 8, 3
+gp_inc	luck		3	16, 15, 2
+gp_inc	luck		3	32, 16, 3
+gp_inc	luck		3	64, 32, 3
+gp_inc	luck		3	64, 63, 2
+				
+ga_inc	luck			8, 4, 2
+ga_inc	luck			8, 4, 3
+ga_inc	luck			8, 5, 2
+ga_inc	luck			8, 7, 2
+ga_inc	luck			16, 8, 2
+ga_inc	luck			16, 8, 3
+ga_inc	luck			16, 15, 2
+ga_inc	luck			32, 16, 3
