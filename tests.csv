@@ -267,7 +267,7 @@ ga_hill	cidev			16, 8, 3
 				
 ga_inc	cidev			32, 16, 3
 gp_inc	cidev		3	32, 16, 3
-ga_hill	cidev			32, 16, 3
+				
 				
 ga	luck			16, 8, 3
 gp	luck		3	16, 8, 3
@@ -277,4 +277,3 @@ ga_hill	luck			16, 8, 3
 				
 ga_inc	luck			32, 16, 3
 gp_inc	luck		3	32, 16, 3
-ga_hill	luck			32, 16, 3
