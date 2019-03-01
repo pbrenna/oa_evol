@@ -8,6 +8,13 @@ fitness_map = {
     'cidev': 'Cidev',
     'luck': 'SheerLuck'
 }
+algo_map = {
+    'ga': 'ga_algo',
+    'gp': 'gp_algo',
+    'ga_hill': 'ga_hill',
+    'gp_inc': 'gp_inc',
+    'ga_inc': 'ga_inc'
+}
 with open("tests.csv") as f:
     csv_reader = csv.reader(f, delimiter='\t')
     line = 0
@@ -16,8 +23,8 @@ with open("tests.csv") as f:
         if row[0] == "":
             continue
         algo = row[0]
+        folder = algo_map[algo]
         part1 = ""
-        folder = "ga_algo"
         fitness = row[1]
         exponent = row[2]
         depth = row[3]
