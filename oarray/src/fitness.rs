@@ -153,7 +153,7 @@ impl OArray {
         if self.delta_fitness_fast() > -std::f64::EPSILON {
             0.0
         } else {
-            1.0
+            -1.0
         }
     }
 }
