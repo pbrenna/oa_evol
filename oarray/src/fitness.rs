@@ -1,6 +1,7 @@
 use oarray::OArray;
 use streaming_iterator::StreamingIterator;
 use t_combinations::{combinations_descent, Combinations};
+use wtform::PolarTruthTable;
 
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum FitnessFunction {
@@ -8,7 +9,8 @@ pub enum FitnessFunction {
     DeltaFast,
     Walsh(u32),       //exponent
     WalshFaster(u32), //exponent
-    WalshRec(u32)
+    WalshRec(u32),
+    Cidev
 }
 pub use self::FitnessFunction::*;
 
@@ -37,7 +39,8 @@ impl OArray {
             DeltaFast => self.delta_fitness_fast(),
             Walsh(exponent) => self.walsh_fitness(exponent),
             WalshFaster(exponent) => self.walsh_faster(exponent),
-            WalshRec(exponent) => self.walsh_fitness_rec(exponent as f64)
+            WalshRec(exponent) => self.walsh_fitness_rec(exponent as f64),
+            Cidev => self.cidev_fitness()
         };
         //dbg!(ret);
         debug_assert!(ret <= 0.0, "overflow");
@@ -136,6 +139,13 @@ impl OArray {
     fn walsh_fitness_rec(&self, p: f64) -> f64 {
         let k = self.k;
         -recurse_comb(k, self.target_t as usize, 1, vec![false; self.ngrande], self, p)
+    }
+    fn cidev_fitness(&self) -> f64 {
+        let tt = self.truth_table();
+        let ptt = PolarTruthTable::from(&tt);
+        let wtf = ptt.walsh_tform();
+        let cidev = wtf.cidev(self.target_t as usize);
+        -f64::from(cidev)
     }
 }
 pub(crate) fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){

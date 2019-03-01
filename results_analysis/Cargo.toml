@@ -1,8 +1,7 @@
 [package]
+authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
 name = "results_analysis"
 version = "0.1.0"
-authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
-
 [[bin]]
 name = "is_linear"
 path = "src/is_linear.rs"
@@ -11,12 +10,10 @@ path = "src/is_linear.rs"
 name = "check_boolfun_props"
 path = "src/check_boolfun_props.rs"
 
-
 [[bin]]
 name = "gen_strings_of_weight"
 path = "src/gen_strings_of_weight.rs"
 
 
-[dependencies]
 [dependencies.oarray]
 path = "../oarray/"

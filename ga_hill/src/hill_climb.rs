@@ -129,7 +129,7 @@ impl GAOArray {
                 let new_f = self.oa.fitness();
                 let tform = PolarTruthTable::from(&truth).walsh_tform();
                 let cidev_t_new = tform.cidev(self.oa.target_t as usize) as i32;
-                debug_assert!(
+                assert!(
                     new_f >= old_f,
                     "Old fitness:{}
                     New fitness:{}

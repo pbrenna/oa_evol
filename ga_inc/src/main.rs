@@ -99,6 +99,7 @@ fn main() {
     let f = match matches.value_of("fitness").unwrap() {
         "Delta" => oarray::FitnessFunction::Delta,
         "DeltaFast" => oarray::FitnessFunction::DeltaFast,
+        "Cidev" => oarray::FitnessFunction::Cidev,
         "Walsh" => oarray::FitnessFunction::Walsh(get_arg!(matches, "fitness-exp", u32)),
         "WalshFast" => oarray::FitnessFunction::WalshFaster(get_arg!(matches, "fitness-exp", u32)),
         _ => panic!("Invalid function name")
