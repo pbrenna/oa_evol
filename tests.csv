@@ -248,6 +248,17 @@ gp_inc	delta		4	32, 16, 3
 gp_inc	delta		4	64, 32, 3
 gp_inc	delta		4	64, 63, 2
 				
+gp_inc	delta		5	8, 4, 2
+gp_inc	delta		5	8, 4, 3
+gp_inc	delta		5	8, 5, 2
+gp_inc	delta		5	8, 7, 2
+gp_inc	delta		5	16, 8, 2
+gp_inc	delta		5	16, 8, 3
+gp_inc	delta		5	16, 15, 2
+gp_inc	delta		5	32, 16, 3
+gp_inc	delta		5	64, 32, 3
+gp_inc	delta		5	64, 63, 2 
+
 ga	cidev			16, 8, 3
 gp	cidev		3	16, 8, 3
 ga_inc	cidev			16, 8, 3
