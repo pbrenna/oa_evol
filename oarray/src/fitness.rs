@@ -10,7 +10,8 @@ pub enum FitnessFunction {
     Walsh(u32),       //exponent
     WalshFaster(u32), //exponent
     WalshRec(u32),
-    Cidev
+    Cidev,
+    SheerLuck
 }
 pub use self::FitnessFunction::*;
 
@@ -40,7 +41,8 @@ impl OArray {
             Walsh(exponent) => self.walsh_fitness(exponent),
             WalshFaster(exponent) => self.walsh_faster(exponent),
             WalshRec(exponent) => self.walsh_fitness_rec(exponent as f64),
-            Cidev => self.cidev_fitness()
+            Cidev => self.cidev_fitness(),
+            SheerLuck => self.sheer_luck_fitness()
         };
         //dbg!(ret);
         debug_assert!(ret <= 0.0, "overflow");
@@ -146,6 +148,13 @@ impl OArray {
         let wtf = ptt.walsh_tform();
         let cidev = wtf.cidev(self.target_t as usize);
         -f64::from(cidev)
+    }
+    fn sheer_luck_fitness(&self) -> f64 {
+        if self.delta_fitness_fast() > -std::f64::EPSILON {
+            0.0
+        } else {
+            1.0
+        }
     }
 }
 pub(crate) fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){
