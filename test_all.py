@@ -5,6 +5,7 @@ makefile = ""
 fitness_map = {
     'delta': 'DeltaFast',
     'walsh': 'WalshFast',
+    'cidev': 'Cidev'
 }
 with open("tests.csv") as f:
     csv_reader = csv.reader(f, delimiter='\t')
