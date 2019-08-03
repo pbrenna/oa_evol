@@ -19,6 +19,7 @@ pub(crate) struct RunParameters {
     pub mutation_prob: f64,
     pub epochs: usize,
     pub fitness_f: FitnessFunction,
+    pub silent: bool,
 }
 
 pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
@@ -74,6 +75,9 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     }
     if -partial.fitness() < f64::EPSILON && partial.k == p.k {
         debug!("{}", partial);
+        if p.silent {
+            println!("{:?}", partial);
+        }
         (true, partial.check_linear())
     } else {
         println!("ASD1");

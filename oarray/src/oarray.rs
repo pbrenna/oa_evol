@@ -1,11 +1,12 @@
 #[allow(unused_imports)]
 use rand::{thread_rng, Rng};
+use std::cmp::Ordering;
 use std::f64::EPSILON;
-use std::fmt::{Display, Error, Formatter};
+use std::fmt::{Debug, Display, Error, Formatter};
 
 use fitness::FitnessFunction;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 /// Array ortogonale di dimensione ngrande * k, che si vuole portare a forza t.
 pub struct OArray {
     pub ngrande: usize,
@@ -78,6 +79,10 @@ impl OArray {
         let b = self.ngrande;
         (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).collect())
     }
+    pub fn iter_rows_val(&self) -> impl Iterator<Item = Vec<bool>> +'_ {
+        let b = self.ngrande;
+        (0..b).map(move |i| (&self.d[i..]).iter().step_by(b).map(|a|*a).collect())
+    }
 
     /*pub fn check_linear_cols(&self) -> bool {
         let cols: Vec<&[bool]> = self.iter_cols().collect();
@@ -120,6 +125,31 @@ impl OArray {
         }
         true
     }
+    pub fn sort_rows(&mut self, cmp: Option<&Fn(&Vec<bool>, &Vec<bool>) -> Ordering>)
+    {
+        let mut rows: Vec<Vec<bool>> = self.iter_rows_val().collect();
+        match cmp {
+            Some(f) => rows.sort_by(f),
+            None => rows.sort_by(|a,b |{a.cmp(b)}),
+        };
+        for (i, item) in self.d.iter_mut().enumerate() {
+            let row = i % self.ngrande;
+            let col = i / self.ngrande;
+            *item = rows[row][col];
+        }
+    }
+}
+impl Debug for OArray {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        for row in self.iter_rows() {
+            for x in row {
+                let x_conv = *x as usize;
+                write!(f, "{} ", x_conv)?
+            }
+            writeln!(f)?
+        }
+        Ok(())
+    }
 }
 
 impl Display for OArray {
@@ -139,14 +169,7 @@ impl Display for OArray {
                 lin=self.check_linear(),
             )?;
         }
-        for row in self.iter_rows() {
-            for x in row {
-                let x_conv = *x as usize;
-                write!(f, "{} ", x_conv)?
-            }
-            writeln!(f)?
-        }
-        Ok(())
+        write!(f, "{:?}", self)
     }
 }
 

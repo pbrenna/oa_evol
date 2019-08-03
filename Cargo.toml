@@ -7,10 +7,11 @@ members = [
     "ga_inc",
     "gp_algo",
     "gp_inc",
-    "results_analysis"
+    "results_analysis",
+    "hill_local"
 ]
 
 [profile.release]
 debug = true
 lto = true
-#codegen-units = 1
+codegen-units = 1

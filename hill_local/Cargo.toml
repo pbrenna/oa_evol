@@ -1,0 +1,9 @@
+[package]
+authors = ["Pietro Brenna <pietrobrenna@hotmail.it>"]
+name = "hill_local"
+version = "0.1.0"
+
+[dependencies]
+log="0.4.5"
+simplelog="0.5.2"
+oarray = {path = "../oarray/"}

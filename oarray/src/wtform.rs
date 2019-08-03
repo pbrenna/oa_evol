@@ -80,9 +80,14 @@ impl WalshTform {
             .filter(|i| {
                 let w = hamming_weight(i);
                 1 <= w && w <= k
-            }).map(|omega| self.table[vec2usize(&omega)].abs())
+            })
+            .map(|omega| self.table[vec2usize(&omega)].abs())
             .max()
             .unwrap() as u32
+    }
+    pub fn nonlinearity(&self) -> f64 {
+        f64::from(2u32.pow((self.log2len - 1) as u32))
+            - f64::from(self.table.iter().map(|x| x.abs()).max().unwrap()) / 2.0
     }
     pub fn radius(&self) -> i32 {
         self.table.iter().map(|i| i.abs()).max().unwrap()
@@ -93,7 +98,10 @@ impl OArray {
         let l = 2usize.pow(self.k as u32);
         let mut out = vec![false; l];
         for r in self.iter_rows() {
-            let val = r.iter().fold(0, |acc, &&val| acc * 2 + (val as usize));
+            let mut val = 0;
+            for &i in r {
+                val = val << 1 | if i { 1 } else { 0 };
+            }
             out[val] = true;
         }
         TruthTable::new(out)

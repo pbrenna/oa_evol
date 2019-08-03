@@ -37,65 +37,96 @@ fn main() {
             Arg::with_name("N")
                 .help("the height of the OA. Must be multiple of 2^t")
                 .required(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("k")
                 .help("the width of the OA")
                 .required(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("t")
                 .help("the strength of the OA")
                 .required(true),
-        ).arg(
+        )
+        .arg(
+            Arg::with_name("silent")
+                .help("Print orthogonal arrays only")
+                .long("silent")
+                .default_value("false"),
+        )
+        .arg(
             Arg::with_name("epochs")
                 .help("Number of epochs per run")
                 .long("epochs")
                 .default_value("50"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("pop-size")
                 .long("pop-size")
                 .help("The size of the population")
                 .default_value("500"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("mutation-prob")
                 .long("mutation-prob")
                 .help("The probability that the offspring is mutated")
                 .default_value("0.5"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("runs")
                 .long("runs")
                 .help("Number of runs in the campaign")
                 .default_value("1"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("log")
                 .long("log")
                 .help("The results of the campaign will be written to this file")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("threads")
                 .long("threads")
                 .help("The max number of runs to be done in parallel")
                 .default_value("1"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("fitness")
                 .long("fitness")
                 .help("Fitness function [Delta, DeltaFast, Walsh]")
                 .default_value("DeltaFast"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("fitness-exp")
                 .long("fitness-exp")
                 .help("Exponent for the fitness function")
                 .default_value("2"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("max-depth")
                 .long("max-depth")
                 .help("The max depth of the generated trees")
                 .default_value("log(N)"),
-        ).get_matches();
+        )
+        .arg(
+            Arg::with_name("breed-factor")
+                .long("breed-factor")
+                .help("Fraction of breeders (the most fit will be chosen) in the total population ")
+                .default_value("0.2"),
+        )
+        .arg(
+            Arg::with_name("survival-factor")
+                .long("survival-factor")
+                .help("Fractions of individuals who will survive to the next epoch")
+                .default_value("0.8"),
+        )
+        .get_matches();
 
     let f = match matches.value_of("fitness").unwrap() {
         "Delta" => oarray::FitnessFunction::Delta,
         "DeltaFast" => oarray::FitnessFunction::DeltaFast,
         "Cidev" => oarray::FitnessFunction::Cidev,
+        "Comb" => oarray::FitnessFunction::Comb(get_arg!(matches, "fitness-exp", u32)),
         "SheerLuck" => oarray::FitnessFunction::SheerLuck,
         "Walsh" => oarray::FitnessFunction::Walsh(get_arg!(matches, "fitness-exp", u32)),
         "WalshFast" => oarray::FitnessFunction::WalshFaster(get_arg!(matches, "fitness-exp", u32)),
@@ -115,12 +146,22 @@ fn main() {
             .unwrap_or((ngrande as f64).log2().round() as usize),
         mutation_prob: get_arg!(matches, "mutation-prob", f64),
         fitness_f: f,
+        breed_factor: get_arg!(matches, "breed-factor", f64),
+        survival_factor: get_arg!(matches, "survival-factor", f64),
+        silent: get_arg!(matches, "silent", bool),
     };
     let runs = get_arg!(matches, "runs", usize);
     let threads = get_arg!(matches, "threads", usize);
     let log = matches.value_of("log");
 
-    let termlogger = SimpleLogger::new(LevelFilter::Info, Config::default());
+    let termlogger = SimpleLogger::new(
+        if params.silent {
+            LevelFilter::Off
+        } else {
+            LevelFilter::Info
+        },
+        Config::default(),
+    );
     if log.is_some() {
         CombinedLogger::init(vec![
             termlogger,
@@ -129,18 +170,18 @@ fn main() {
                 Config::default(),
                 File::create(log.unwrap()).unwrap(),
             ),
-        ]).unwrap();
+        ])
+        .unwrap();
     } else {
         CombinedLogger::init(vec![termlogger]).unwrap();
     }
-
     info!(
         "Looking for OA[N: {}, k: {}, s: 2, t: {}]",
         params.ngrande, params.k, params.t
     );
     debug!("{:#?}", params);
 
-    let show_progress = threads == 1;
+    let show_progress = threads == 1 && !params.silent;
     let runs_per_thread = runs / threads;
     let resto = runs % threads;
     let join_handles: Vec<_> = (0..threads)
@@ -172,7 +213,8 @@ fn main() {
                 }
                 (my_finds, my_linear_finds)
             })
-        }).collect();
+        })
+        .collect();
     let mut found = 0;
     let mut found_linear = 0;
     for j in join_handles {

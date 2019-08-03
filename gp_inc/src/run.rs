@@ -5,7 +5,7 @@ use rand::OsRng;
 use std::f64;
 
 //mod epoch;
-//use epoch::TournamentEpoch;
+use epoch::TournamentEpoch;
 use spiril::epoch::DefaultEpoch;
 
 use gpoarray::IncGPOArray;
@@ -23,6 +23,9 @@ pub(crate) struct RunParameters {
     pub max_depth: usize,
     pub epochs: usize,
     pub fitness_f: FitnessFunction,
+    pub silent: bool,
+    pub breed_factor: f64,
+    pub survival_factor: f64
 }
 
 pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
@@ -30,8 +33,8 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
     assert!(ngrande % (2usize.pow(p.t)) == 0, "2^t non divide N");
     let mut partial = OArray::generate_partial(ngrande, p.t, p.fitness_f);
     let mut k_current = p.t as usize;
-    //let epoch = TournamentEpoch::new();
-    let epoch = DefaultEpoch::default();
+    let epoch = TournamentEpoch::new();
+    //let epoch = DefaultEpoch::new(p.breed_factor, p.survival_factor);
     let crossover = Crossover::hard_prune(p.max_depth);
     //let crossover = Crossover::one_point_leaf_biased(leaf_bias);
     let mutation = Mutation::uniform_prune(p.max_depth);
@@ -64,7 +67,7 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
             let f = Population::new(units)
                 .set_size(p.pop_size)
                 .register_callback(Box::new(move |i, j| {
-                    if show_progress && cnt % 100 == 0 {
+                    if show_progress && cnt % 10 == 0 {
                         pbar.message(&format!(
                             " Col: {}, Best: {:.4}, Mean: {:.4}; iteration ",
                             k_current, i, j
@@ -88,8 +91,6 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
             best = best1.to_oarray();
         }
         if -best.fitness() < f64::EPSILON {
-            //println!("{:?}", &best.d[best.ngrande * (best.k - 1)..]);
-
             partial = best;
         } else {
             return (false, false);
@@ -101,9 +102,11 @@ pub(crate) fn run(p: &RunParameters, show_progress: bool) -> (bool, bool) {
         for (i, f) in formulas.iter().enumerate() {
             debug!("Formula {}: {}", i + 1, f);
         }
+        if p.silent {
+            println!("{:?}", partial);
+        }
         (true, partial.check_linear())
     } else {
-        println!("ASD1");
         (false, false)
     }
 }

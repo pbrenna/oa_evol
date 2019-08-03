@@ -13,6 +13,7 @@ use std::fs::File;
 use std::thread;
 
 mod run;
+//mod epoch;
 mod genetic_operators;
 mod hill_climb;
 use run::run;

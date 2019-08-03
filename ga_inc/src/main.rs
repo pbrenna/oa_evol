@@ -1,7 +1,7 @@
+extern crate clap;
 extern crate oarray;
 extern crate pbr;
 extern crate rand;
-extern crate clap;
 extern crate spiril;
 #[macro_use]
 extern crate log;
@@ -13,8 +13,8 @@ use simplelog::*;
 use std::fs::File;
 use std::thread;
 
-mod run;
 mod genetic_operators;
+mod run;
 use run::run;
 mod epoch;
 
@@ -47,6 +47,12 @@ fn main() {
                 .required(true),
         )
         .arg(
+            Arg::with_name("silent")
+                .help("Print orthogonal arrays only")
+                .long("silent")
+                .default_value("false"),
+        )
+        .arg(
             Arg::with_name("epochs")
                 .help("Number of epochs per run")
                 .long("epochs")
@@ -74,7 +80,7 @@ fn main() {
             Arg::with_name("log")
                 .long("log")
                 .help("The results of the campaign will be written to this file")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("threads")
@@ -86,13 +92,13 @@ fn main() {
             Arg::with_name("fitness")
                 .long("fitness")
                 .help("Fitness function [Delta, DeltaFast, Walsh]")
-                .default_value("DeltaFast")
+                .default_value("DeltaFast"),
         )
         .arg(
             Arg::with_name("fitness-exp")
                 .long("fitness-exp")
                 .help("Exponent for the fitness function")
-                .default_value("2")
+                .default_value("2"),
         )
         .get_matches();
 
@@ -103,7 +109,7 @@ fn main() {
         "SheerLuck" => oarray::FitnessFunction::SheerLuck,
         "Walsh" => oarray::FitnessFunction::Walsh(get_arg!(matches, "fitness-exp", u32)),
         "WalshFast" => oarray::FitnessFunction::WalshFaster(get_arg!(matches, "fitness-exp", u32)),
-        _ => panic!("Invalid function name")
+        _ => panic!("Invalid function name"),
     };
     let params = run::RunParameters {
         ngrande: get_arg!(matches, "N", usize),
@@ -112,13 +118,21 @@ fn main() {
         epochs: get_arg!(matches, "epochs", usize),
         pop_size: get_arg!(matches, "pop-size", usize),
         mutation_prob: get_arg!(matches, "mutation-prob", f64),
-        fitness_f : f
+        silent: get_arg!(matches, "silent", bool),
+        fitness_f: f,
     };
     let runs = get_arg!(matches, "runs", usize);
     let threads = get_arg!(matches, "threads", usize);
     let log = matches.value_of("log");
 
-    let termlogger = SimpleLogger::new(LevelFilter::Info, Config::default());
+    let termlogger = SimpleLogger::new(
+        if params.silent {
+            LevelFilter::Off
+        } else {
+            LevelFilter::Info
+        },
+        Config::default(),
+    );
     if log.is_some() {
         CombinedLogger::init(vec![
             termlogger,
@@ -135,20 +149,18 @@ fn main() {
 
     info!(
         "Looking for OA[N: {}, k: {}, s: 2, t: {}]",
-        params.ngrande,
-        params.k,
-        params.t
+        params.ngrande, params.k, params.t
     );
     debug!("{:#?}", params);
 
-    let show_progress = threads == 1;
+    let show_progress = threads == 1 && !params.silent;
     let runs_per_thread = runs / threads;
     let resto = runs % threads;
-        let join_handles: Vec<_> = (0..threads)
+    let join_handles: Vec<_> = (0..threads)
         .map(|thr| {
             thread::spawn(move || {
                 let mut my_finds = 0usize;
-                let mut my_linear_finds= 0usize;
+                let mut my_linear_finds = 0usize;
                 let my_runs = if thr < resto {
                     runs_per_thread + 1
                 } else {

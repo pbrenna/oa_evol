@@ -1,6 +1,7 @@
-use oarray::binary_strings::BinaryStringIterator;
 use evco::gp::tree::*;
 use evco::gp::*;
+use oarray::binary_strings::BinaryStringIterator;
+use oarray::wtform::PolarTruthTable;
 use oarray::{
     FitnessFunction::{self, *},
     OArray,
@@ -77,21 +78,19 @@ impl<'a, R: Rng + Send> IncGPOArray<'a, R> {
         self.lazy_fitness = None;
     }
     fn oa_fitness(&self, last_col: &[bool]) -> f64 {
-        let oa_fit = match self.partial.fitness_f {
+        match self.partial.fitness_f {
             Walsh(x) => self.partial.walsh_incremental(x, last_col),
             WalshFaster(x) => self.partial.walsh_incremental_faster(x, last_col),
+            Comb(x) => {
+                let a = -self.partial.walsh_incremental_faster(2, last_col);
+                let oa = self.to_oarray();
+                let b = PolarTruthTable::from(&oa.truth_table()).walsh_tform().nonlinearity();
+                //dbg!(b);
+                -(a + f64::max(0.0, f64::from(x) * (self.k as f64 -1.0)-1.0-b))
+            }
             DeltaFast => self.to_oarray().delta_incremental_faster(),
             _ => self.to_oarray().fitness(),
-        };
-        let mut tot = 0i64;
-        for cell in last_col {
-            if *cell {
-                tot += 1;
-            } else {
-                tot -= 1;
-            }
         }
-        oa_fit - (tot.abs() as f64)
     }
 }
 

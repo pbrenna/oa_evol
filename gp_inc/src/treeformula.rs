@@ -108,6 +108,7 @@ impl Display for TreeFormula {
         }
     }
 }
+#[allow(dead_code)]
 fn subscript(i: usize) -> String {
     if i >= 10 {
         subscript(i / 10) + &subscript(i % 10)

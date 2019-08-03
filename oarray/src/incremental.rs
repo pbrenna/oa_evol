@@ -5,6 +5,10 @@ use streaming_iterator::StreamingIterator;
 use t_combinations;
 
 impl OArray {
+    pub fn generate_empty_partial(ngrande:usize, target_t: u32, fitness_f: FitnessFunction) -> Self {
+        let d = vec![];
+        OArray::new(ngrande, 0, target_t, d, fitness_f)
+    }
     pub fn generate_partial(ngrande: usize, target_t: u32, fitness_f: FitnessFunction) -> Self {
         let stringhe = 2usize.pow(target_t);
         let lambda = ngrande / stringhe;

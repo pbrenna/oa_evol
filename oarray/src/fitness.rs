@@ -11,7 +11,8 @@ pub enum FitnessFunction {
     WalshFaster(u32), //exponent
     WalshRec(u32),
     Cidev,
-    SheerLuck
+    SheerLuck,
+    Comb(u32),
 }
 pub use self::FitnessFunction::*;
 
@@ -42,7 +43,8 @@ impl OArray {
             WalshFaster(exponent) => self.walsh_faster(exponent),
             WalshRec(exponent) => self.walsh_fitness_rec(exponent as f64),
             Cidev => self.cidev_fitness(),
-            SheerLuck => self.sheer_luck_fitness()
+            SheerLuck => self.sheer_luck_fitness(),
+            Comb(exponent) => self.comb_fitness(exponent as f64),
         };
         //dbg!(ret);
         debug_assert!(ret <= 0.0, "overflow");
@@ -120,27 +122,28 @@ impl OArray {
         let cols: Vec<&[bool]> = self.iter_cols().collect();
         let mut grand_tot = 0;
         let tmp0 = vec![false; self.ngrande];
-        combinations_descent(
-            self.k,
-            self.target_t as usize,
-            0,
-            &tmp0,
-            &mut |i, tmp| {
-                let tmp1: Vec<bool> = cols[i].iter().zip(tmp.iter()).map(|(a, b)| a ^ b).collect();
-                let mut my_tot = 0i64;
-                for x in &tmp1 {
-                    my_tot += if *x { 1 } else { -1 };
-                }
-                //println!("{:?}, {:?}", my_tot, tmp1);
-                grand_tot += my_tot.pow(exp).abs();
-                tmp1
-            },
-        );
+        combinations_descent(self.k, self.target_t as usize, 0, &tmp0, &mut |i, tmp| {
+            let tmp1: Vec<bool> = cols[i].iter().zip(tmp.iter()).map(|(a, b)| a ^ b).collect();
+            let mut my_tot = 0i64;
+            for x in &tmp1 {
+                my_tot += if *x { 1 } else { -1 };
+            }
+            //println!("{:?}, {:?}", my_tot, tmp1);
+            grand_tot += my_tot.pow(exp).abs();
+            tmp1
+        });
         -grand_tot as f64
     }
     fn walsh_fitness_rec(&self, p: f64) -> f64 {
         let k = self.k;
-        -recurse_comb(k, self.target_t as usize, 1, vec![false; self.ngrande], self, p)
+        -recurse_comb(
+            k,
+            self.target_t as usize,
+            1,
+            vec![false; self.ngrande],
+            self,
+            p,
+        )
     }
     fn cidev_fitness(&self) -> f64 {
         let tt = self.truth_table();
@@ -156,18 +159,28 @@ impl OArray {
             -1.0
         }
     }
+    fn comb_fitness(&self, p: f64) -> f64 {
+        let a = -self.walsh_fitness_rec(2.0);
+        let b = PolarTruthTable::from(&self.truth_table()).walsh_tform().nonlinearity();
+        -(a + f64::max(0.0, p * (self.k as f64)-1.0-b))
+    }
 }
-pub(crate) fn walsh_step(agrande:&OArray,i:usize,column:Vec<bool>,p:f64)->(Vec<bool>,f64){
+pub(crate) fn walsh_step(
+    agrande: &OArray,
+    i: usize,
+    column: Vec<bool>,
+    p: f64,
+) -> (Vec<bool>, f64) {
     let mut total = 0i64;
-    let mut new_column = vec![false;agrande.ngrande];
+    let mut new_column = vec![false; agrande.ngrande];
     for j in 1..=agrande.ngrande {
-        new_column[j-1] = column[j-1] ^ agrande.iter_cols().nth(i-1).unwrap()[j-1];
-        if new_column[j-1] == true {
+        new_column[j - 1] = column[j - 1] ^ agrande.iter_cols().nth(i - 1).unwrap()[j - 1];
+        if new_column[j - 1] == true {
             total = total + 1;
         } else {
             total = total - 1;
         }
-//        dbg!(total);
+        //        dbg!(total);
     }
     (new_column, (total as f64).abs().powf(p))
 }
@@ -185,9 +198,9 @@ pub(crate) fn recurse_comb(
         return 0.0;
     }
     for i in base..=k {
-        let (new_column, partial) = walsh_step(agrande,i,column.clone(), p);
+        let (new_column, partial) = walsh_step(agrande, i, column.clone(), p);
         total = total + partial;
-        let rec = recurse_comb(k, comb_len-1, i+1, new_column, agrande, p);
+        let rec = recurse_comb(k, comb_len - 1, i + 1, new_column, agrande, p);
         total = total + rec;
     }
     total
@@ -409,6 +422,6 @@ mod test {
                 let b = oa.fitness();
                 test::black_box(b);
             })
-        } 
+        }
     }*/
 }

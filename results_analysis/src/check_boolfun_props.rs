@@ -10,7 +10,7 @@ fn main() -> io::Result<()> {
     let mut buffer = String::new();
     let t: u32 = env::args()
         .nth(1)
-        .unwrap_or_else(|| "1".into())
+        .expect("Fornire parametro t come argomento")
         .parse()
         .unwrap();
     io::stdin().read_to_string(&mut buffer)?;
