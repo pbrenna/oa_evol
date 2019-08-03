@@ -109,11 +109,11 @@ fn balanced_crossover_test() {
     use oarray::FitnessFunction;
     let mut r = thread_rng();
     for _ in 0..100 {
-        let mut a = GAOArray {
+        let a = GAOArray {
             oa: OArray::new_random_balanced(8, 1, 1, &mut r, FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };
-        let mut b = GAOArray {
+        let b = GAOArray {
             oa: OArray::new_random_balanced(8, 1, 1, &mut r, FitnessFunction::DeltaFast),
             mutation_prob: 0.5,
         };

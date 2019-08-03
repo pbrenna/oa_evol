@@ -93,7 +93,7 @@ impl OArray {
         }
         -grand_tot as f64
     }
-    fn walsh_incremental_rec(&self, p: f64, last: &[bool]) -> f64 {
+    pub fn walsh_incremental_rec(&self, p: f64, last: &[bool]) -> f64 {
         use fitness::{walsh_step,recurse_comb};
         let k = self.k + 1;
         let mut concat= self.clone();

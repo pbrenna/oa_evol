@@ -1,6 +1,5 @@
 use evco::gp::tree::*;
 use rand::Rng;
-use std::char;
 use std::fmt::{Display, Error, Formatter};
 
 #[derive(Clone, Debug, PartialEq, Eq)]

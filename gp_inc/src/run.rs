@@ -6,7 +6,7 @@ use std::f64;
 
 //mod epoch;
 use epoch::TournamentEpoch;
-use spiril::epoch::DefaultEpoch;
+//use spiril::epoch::DefaultEpoch;
 
 use gpoarray::IncGPOArray;
 use oarray::{FitnessFunction, OArray};
