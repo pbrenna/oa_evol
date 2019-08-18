@@ -3,7 +3,7 @@ use oarray::OArray;
 
 impl<'a> From<&'a str> for OArray {
     fn from(input: &'a str) -> Self {
-        let rows = input.lines();
+        let rows = input.trim().lines();
         let mut d = Vec::new();
         let mut k = None;
         let mut row_cnt = 0;

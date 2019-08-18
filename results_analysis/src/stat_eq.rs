@@ -8,9 +8,9 @@ use std::fs::read_to_string;
 use std::process::exit;
 
 fn main() {
-    let matches = App::new("StatEq")
+    let matches = App::new("stat_eq")
         .version("0.1.0")
-        .author("Pietro Brenna <p.brenna2@campus.unimib.Iterator>")
+        .author("Pietro Brenna <p.brenna2@campus.unimib.it>")
         .about("Checks statistical equivalence. Exit status 0: equivalent; 1: not equivalent")
         .arg(
             Arg::with_name("file1")
